@@ -29,14 +29,15 @@ class KubernetesDeploymentOutputGateway(object):
             service_result = self.create_service(client.CoreV1Api(), port, project)
             ingress_result = self.create_ingress(networking_v1_beta1_api, project, host, port)
 
-            result = {
-                'deployment': deployment_result, 
-                'services': [service_result],
-                'networking': ingress_result
-            }
-
-
-            return result        
+            # result = {
+            #     'deployment': deployment_result, 
+            #     'services': [service_result],
+            #     'networking': ingress_result
+            # }
+            return {
+                'code': 200, 
+                'message': 'Deployment running'
+            }        
      
         except ApiException as ex:
             import json 
@@ -161,9 +162,36 @@ class KubernetesDeploymentOutputGateway(object):
 
     def delete_deployment(self, deployment_name):
         # Delete deployment
+        self.delete_service(deployment_name)
+        self.delete_ingress(deployment_name)
         api = self.__get_api('Deployment')
         resp = api.delete(deployment_name, deployment_name)
+    #     resp = self.apps_v1.delete_namespaced_deployment(
+    #     name=deployment_name,
+    #     namespace=deployment_name,
+    #     body=client.V1DeleteOptions(
+    #         propagation_policy="Foreground", grace_period_seconds=5
+    #     ),
+    # )
         return resp 
+    
+    def delete_service(self, name):
+        client = dynamic.DynamicClient(
+            api_client.ApiClient(configuration=config.load_kube_config())
+        )
+        # fetching the service api
+        api = client.resources.get(api_version="v1", kind="Service")
+        service_deleted = api.delete(name=f'{name}-service', body={}, namespace=name)
+        return service_deleted
+
+    def delete_ingress(self, name):
+        client = dynamic.DynamicClient(
+            api_client.ApiClient(configuration=config.load_kube_config())
+        )
+        # fetching the service api
+        api = client.resources.get(api_version="v1", kind="Ingress")
+        ingress_deleted = api.delete(name=f'{name}-ingress', body={}, namespace=name)
+        return ingress_deleted
 
     def deployment_status(self, deployment_name):
         api = self.__get_api('Deployment')

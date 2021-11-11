@@ -26,12 +26,12 @@ repo = PostgresRepo({
 @router.post('/deploy/')
 async def run_deployment(deployment: Deployment):
     try:
-        result = create_or_update_deployment(
-            repo, kubernetes_deployment, deployment)
-
-        if result == 200:
+        result = create_or_update_deployment(repo, kubernetes_deployment, deployment)
+        if result.get('code') == 200:
             return JSONResponse(
-                content={'message': 'success'},
+                content={
+                    'message': result.get('message')
+                },
                 # {
                 #     'deployment': {
                 #         'name': result.metadata.name,
