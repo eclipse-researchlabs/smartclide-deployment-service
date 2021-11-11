@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  # registry:
+  #   image: registry:2
+  #   container_name: docker_registry
+  #   ports:
+  #   - "5000:5000"
+  #   environment:
+  #     REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /data
+  #   volumes:
+  #      - ./data/registry:/data
+  #   restart: always
+  database:
+    image: "postgres" # use latest official postgres version
+    env_file:
+      - database.env # configure postgres
+    volumes:
+      - database-data:/var/lib/postgresql/data/ # persist data even if container shuts down
+    ports:
+      - 5432:5432
+
+  # jenkins:
+  #   image: jenkins/jenkins:lts
+  #   privileged: true
+  #   user: root
+  #   ports:
+  #     - 8081:8080
+  #     - 50000:50000
+  #   container_name: jenkins
+  #   volumes:
+  #     - ./data/jenkins:/var/jenkins_home
+  #     - /home/pberrocal/dev/:/var/jenkins_home/workspace/
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - /usr/local/bin/docker:/usr/local/bin/docker
+
+volumes:
+  database-data: # named volumes can be managed easier using docker-compose
