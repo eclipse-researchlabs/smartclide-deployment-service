@@ -34,8 +34,9 @@ class KubernetesDeploymentOutputGateway(object):
             #     'services': [service_result],
             #     'networking': ingress_result
             # }
+
             return {
-                'code': 200, 
+                'code': 200,
                 'message': 'Deployment running'
             }        
      
@@ -194,15 +195,15 @@ class KubernetesDeploymentOutputGateway(object):
         return ingress_deleted
 
     def deployment_status(self, deployment_name):
-        api = self.__get_api('Deployment')
-        deployment = api.get(name=deployment_name, namespace=deployment_name)
-        # api = self.__get_api('Services')
-        # service = api.get(name=service_name, namespace="default")
-        
-        return {
-            'deployment': dict(deployment.status), 
-            # 'service': dict(service.status)
-        }
+        try:
+            api = self.__get_api('Deployment')
+            deployment = api.get(name=deployment_name, namespace=deployment_name)
+            # api = self.__get_api('Services')
+            # service = api.get(name=service_name, namespace="default")
+            return deployment.status
+
+        except ApiException as ex:
+            return ex
 
     def create_namespace(self, name):
         # Creating a dynamic client
@@ -236,6 +237,11 @@ class KubernetesDeploymentOutputGateway(object):
         return api
 
     def get_deployment_metrics(self, name):
+        config.load_kube_config()
+        api = client.CustomObjectsApi()
+        k8s_nodes = api.list_cluster_custom_object("metrics.k8s.io", "v1beta1", "pods")
 
-        apiV2 = client.AppsV2Api()
-        metrics = self.apps_v1.V1beta1ContainerResourceMetricStatus()
+        for stats in k8s_nodes['items']:
+            if name in stats['metadata']['namespace']:
+                # l.debug("Node Name: %s\tCPU: %s\tMemory: %s" % (stats['metadata']['name'], stats['usage']['cpu'], stats['usage']['memory']))
+                return stats['containers']

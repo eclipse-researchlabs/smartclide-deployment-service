@@ -1,13 +1,13 @@
 def list_deployments(repo):
     return repo.list()
 
-def create_or_update_deployment(repo, gateway, deployment):    
+def create_or_update_deployment(gateway, image, replicas, hostname, port):    
     deployment_result = gateway.deploy(
-            project=deployment.project, 
-            image='{}/{}'.format(deployment.username, deployment.project), 
-            replicas=int(deployment.replicas),
-            host=deployment.domain, 
-            port=int(deployment.port)
+            project=image.split('/')[1], 
+            image=image, 
+            replicas=int(replicas),
+            host=hostname, 
+            port=int(port)
         )
 
     if deployment_result:

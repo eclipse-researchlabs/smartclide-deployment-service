@@ -1,3 +1,4 @@
+import pdb
 from fastapi import APIRouter, File, UploadFile
 from fastapi.responses import JSONResponse
 from gitlab.v4.objects import deployments
@@ -23,10 +24,10 @@ repo = PostgresRepo({
 })
 
 
-@router.post('/deploy/')
-async def run_deployment(deployment: Deployment):
+@router.post('/deploy')
+async def run_deployment(image: str, hostname: str, port: int, replicas: int = 1):
     try:
-        result = create_or_update_deployment(repo, kubernetes_deployment, deployment)
+        result = create_or_update_deployment(kubernetes_deployment, image, replicas, hostname, port)
         if result.get('code') == 200:
             return JSONResponse(
                 content={
@@ -40,7 +41,7 @@ async def run_deployment(deployment: Deployment):
                 #         'container_image': result.spec.template.spec.containers[0].image
                 #     }
                 # },
-                status_code=result.get('code')
+                status_code=200
             )
         else:
             # Deployment already running
@@ -67,15 +68,26 @@ async def run_deployment(deployment: Deployment):
 #     return JSONResponse(content=list_deployments(repo))
 
 
-@router.get('/deployments/{id}')
-async def get_deployment():
-    return []
-
-
-@router.delete('/deployments/{project_name}')
-async def delete_deployment(project_name):
+@router.get('/deployments')
+async def get_deployment(name):
     try:
-        result = kubernetes_deployment.delete_deployment(project_name)
+        deployment = kubernetes_deployment.deployment_status(name)
+        if deployment.status == 404:
+            return JSONResponse(content={'message': 'Deployment not found'}, status_code=400)
+        else:
+            message = deployment['conditions'][-1]['message']
+            return JSONResponse(content={'message': message}, status_code=200)
+    
+    except:
+        import traceback
+        traceback.print_exc()
+        return JSONResponse(content={'message': 'internal server error'}, status_code=500)
+    
+
+@router.delete('/deployments')
+async def delete_deployment(project):
+    try:
+        result = kubernetes_deployment.delete_deployment(project)
         return JSONResponse(content={'message': 'deployment was successfully deleted'}, status_code=200)
 
     except NotFoundError:

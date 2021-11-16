@@ -8,7 +8,7 @@ from typing import Optional
 class Build():
     uuid.UUID
     project: str
-    username: str
+    username: Optional[str] = None
     image: Optional[str] = None
     docker_password: Optional[str] = None
     timestamp: Optional[datetime] = None

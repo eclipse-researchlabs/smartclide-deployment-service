@@ -11,7 +11,7 @@ from deployment_service.api.deployment import router as deployment_router
 from deployment_service.api.build import router as build_router
 # settings = Settings()
 
-api = FastAPI(title="SmartCLIDE development service API")
+api = FastAPI(title="SmartCLIDE deployment service API")
 
 # @api.get('/')
 # async def root():
@@ -34,7 +34,7 @@ api.add_middleware(
 if __name__ == '__main__':
 
     try:
-        
+
         print(f"[+] Starting Deployment service API on port 3000")
         uvicorn.run(api, host='0.0.0.0', port=3000)
     except Exception as err:
