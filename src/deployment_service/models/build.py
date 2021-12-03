@@ -6,12 +6,26 @@ from typing import Optional
 
 @dataclass
 class Build():
-    uuid.UUID
+    id: int
     project: str
-    username: Optional[str] = None
-    image: Optional[str] = None
-    docker_password: Optional[str] = None
-    timestamp: Optional[datetime] = None
-    tag: Optional[str] = None
-    version: Optional[str] = None
+    status: str
+    image: str = None
+    branch: str = None 
+    started_at: datetime = None
+    finished_at: datetime = None
+    duration: float = None
+    username: str = None
+    avatar_url: str = None
+    commit_id: str = None
+    commit_msg: str = None
+    committer_name: str = None
+
+
+
+    @classmethod
+    def from_dict(self, d):
+        return self(**d)
+
+    def to_dict(self):
+        return asdict(self)
 

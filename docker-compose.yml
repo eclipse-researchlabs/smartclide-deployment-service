@@ -1,6 +1,22 @@
 version: '3'
 
 services:
+  deployment_service:
+    build: .
+    container_name: deployment_component
+    hostname: deployment_component
+    ports:
+      - 3000:3000
+
+  database:
+    image: "postgres" 
+    env_file:
+      - database.env 
+    volumes:
+      - database-data:/var/lib/postgresql/data/ 
+    ports:
+      - 5432:5432
+
   # registry:
   #   image: registry:2
   #   container_name: docker_registry
@@ -11,15 +27,6 @@ services:
   #   volumes:
   #      - ./data/registry:/data
   #   restart: always
-  database:
-    image: "postgres" # use latest official postgres version
-    env_file:
-      - database.env # configure postgres
-    volumes:
-      - database-data:/var/lib/postgresql/data/ # persist data even if container shuts down
-    ports:
-      - 5432:5432
-
   # jenkins:
   #   image: jenkins/jenkins:lts
   #   privileged: true
@@ -35,4 +42,4 @@ services:
   #     - /usr/local/bin/docker:/usr/local/bin/docker
 
 volumes:
-  database-data: # named volumes can be managed easier using docker-compose
+  database-data: 

@@ -23,10 +23,10 @@ class Deployment():
     timestamp: datetime
 
 
-    # @classmethod
-    # def from_dict(self, d):
-    #     return self(**d)
+    @classmethod
+    def from_dict(self, d):
+        return self(**d)
 
-    # def to_dict(self):
-    #     return asdict(self)
+    def to_dict(self):
+        return asdict(self)
 

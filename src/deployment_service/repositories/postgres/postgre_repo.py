@@ -37,3 +37,7 @@ class PostgresRepo:
         query = session.query(Deployment)
 
         return self.__create_deployment_objects(query.all())
+
+
+    def save(self, deployment):
+        pass

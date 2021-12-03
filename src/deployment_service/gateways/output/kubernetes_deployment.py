@@ -9,7 +9,7 @@ from deployment_service.config.logging import logger as l
 class KubernetesDeploymentOutputGateway(object):
 
     def __init__(self):
-        config.load_kube_config()
+        config.load_config()
         self.apps_v1 = client.AppsV1Api()
 
         
@@ -45,9 +45,6 @@ class KubernetesDeploymentOutputGateway(object):
             return json.loads(ex.body)
 
         except Exception as ex:
-
-            import pytest
-            pytest.set_trace()
             update_result = self.update_deployment(self.apps_v1, deployment, project)
             return {
                 'update': update_result
@@ -137,8 +134,7 @@ class KubernetesDeploymentOutputGateway(object):
                             )
                         )]
                     )
-                )
-                ]
+                )]
             )
         )
 
@@ -167,27 +163,19 @@ class KubernetesDeploymentOutputGateway(object):
         self.delete_ingress(deployment_name)
         api = self.__get_api('Deployment')
         resp = api.delete(deployment_name, deployment_name)
-    #     resp = self.apps_v1.delete_namespaced_deployment(
-    #     name=deployment_name,
-    #     namespace=deployment_name,
-    #     body=client.V1DeleteOptions(
-    #         propagation_policy="Foreground", grace_period_seconds=5
-    #     ),
-    # )
         return resp 
     
     def delete_service(self, name):
         client = dynamic.DynamicClient(
-            api_client.ApiClient(configuration=config.load_kube_config())
+            api_client.ApiClient(configuration=config.load_config())
         )
-        # fetching the service api
         api = client.resources.get(api_version="v1", kind="Service")
         service_deleted = api.delete(name=f'{name}-service', body={}, namespace=name)
         return service_deleted
 
     def delete_ingress(self, name):
         client = dynamic.DynamicClient(
-            api_client.ApiClient(configuration=config.load_kube_config())
+            api_client.ApiClient(configuration=config.load_config())
         )
         # fetching the service api
         api = client.resources.get(api_version="v1", kind="Ingress")
@@ -198,8 +186,6 @@ class KubernetesDeploymentOutputGateway(object):
         try:
             api = self.__get_api('Deployment')
             deployment = api.get(name=deployment_name, namespace=deployment_name)
-            # api = self.__get_api('Services')
-            # service = api.get(name=service_name, namespace="default")
             return deployment.status
 
         except ApiException as ex:
@@ -211,7 +197,6 @@ class KubernetesDeploymentOutputGateway(object):
             api_client.ApiClient(configuration=config.load_kube_config())
         )
 
-        # fetching the custom resource definition (CRD) api
         crd_api = client.resources.get(
             api_version="apiextensions.k8s.io/v1", kind="CustomResourceDefinition"
         )
@@ -243,5 +228,14 @@ class KubernetesDeploymentOutputGateway(object):
 
         for stats in k8s_nodes['items']:
             if name in stats['metadata']['namespace']:
-                # l.debug("Node Name: %s\tCPU: %s\tMemory: %s" % (stats['metadata']['name'], stats['usage']['cpu'], stats['usage']['memory']))
-                return stats['containers']
+                return stats['containers']                
+
+
+    def get_token(self, region_name: str ='us-west-2', aws_access_key_id: str ='AKIAUHL7KHCHVDWI2TCN', aws_secret_access_key: str = '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'):
+        eks_client = boto3.client(
+            'eks',
+            region_name=region_name,
+            aws_access_key_id=aws_access_key_id,
+            aws_secret_access_key=aws_secret_access_key,
+        )
+        eks_details = eks_client.describe_cluster(name='my_cluster')['cluster']

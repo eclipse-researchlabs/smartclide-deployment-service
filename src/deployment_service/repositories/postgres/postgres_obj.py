@@ -1,3 +1,5 @@
+import uuid
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Column, Integer, String, Float, Time, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -20,7 +22,7 @@ class Deployment(Base):
 
 class Service(Base):
     __tablename__ = 'service'
-    id = Column(Integer, primary_key=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Column(String(36), nullable=False)
     ipv4: Column(String(15), nullable=False)
     port: Column(Integer, primary_key=False)

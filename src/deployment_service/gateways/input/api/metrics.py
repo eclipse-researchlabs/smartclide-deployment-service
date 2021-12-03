@@ -6,8 +6,8 @@ from fastapi import APIRouter
 
 router = APIRouter()
 
-@router.get('/monitoring')
-async def monitoring(project):
+@router.get('/metrics')
+async def metrics(project):
     try:
         deployment = KubernetesDeploymentOutputGateway()
         containers_metrics = deployment.get_deployment_metrics(project)

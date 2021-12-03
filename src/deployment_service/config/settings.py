@@ -1,7 +1,7 @@
 
 class Settings():
 
-    def __init___(self):
+    def __init__(self):
         self.repositories = {
             'postgres': {
                 'host': 'localhost', 
@@ -9,11 +9,14 @@ class Settings():
                 'password': ''
             }
         }
-
         self.api = {
             'host': '0.0.0.0', 
             'port': 6666
         } 
+        self.gitlab = {
+            'url': 'https://gitlab.dev.smartclide.eu/',
+            'docker_url': 'tcp://docker:2375'
+        }
 
 
     def get_job_config(self, job_name, cvs_url, pipeline):

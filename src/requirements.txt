@@ -3,3 +3,6 @@ fastapi
 gitlab
 sqlalchemy
 psycopg2
+requests
+python-gitlab
+kubernetes
