@@ -1,7 +1,8 @@
 # SmartCLIDE deployment component
 ## Prerequisites
-### Gitlab instance hosted repo and access token, since we use gitlab-ci for contructing Docker images
-### Running Kubernetes instance and an access bearer (see below), becouse we use kubernetes cluster to deploy docker images from a docker registry
+Gitlab instance hosted repo and access token, since we use gitlab-ci for contructing Docker images
+
+Running Kubernetes instance and an access bearer (see below), becouse we use kubernetes cluster to deploy docker images from a docker registry
 
 ### Create kubernetes user and get your bearer
 ``` bash
