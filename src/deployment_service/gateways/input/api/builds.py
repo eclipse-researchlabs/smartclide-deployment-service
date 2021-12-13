@@ -35,13 +35,13 @@ async def get_project_latest_build(project: str, x_token: str = Header(None) ):
         if result:
             return JSONResponse(result)
         else:
-            return JSONResponse(
-                content={
-                    'state': '',
-                    'message': f'Project {project} not found'    
-                },
-                status_code=400
-            )
+                return JSONResponse(
+                    content={
+                        'state': '',
+                        'message': f'Project {project} not found'    
+                    },
+                    status_code=400
+                )
 
     except Exception as ex:
         import traceback

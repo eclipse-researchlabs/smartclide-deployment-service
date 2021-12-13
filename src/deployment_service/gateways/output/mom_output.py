@@ -10,19 +10,15 @@ from deployment_service.config.settings import Settings
 class MOMMQTTOutputGateway(object):
 
     def __init__(self):
-        settings = Settings
-
-        self.__host = settings['mom_host']
-        self.__port = settings['mom_port']
-        self.__topic = settings['mom_topic']
-        
+        settings = Settings()
+        self.__host = settings.mom['mom_host']
+        self.__port = int(settings.mom['mom_port'])
         self.SUCCESS = mqtt.MQTT_ERR_SUCCESS
-        
         self.__mqtt_client = self.get_mqtt_client()
     
     
     def get_mqtt_client(self):
-        client = mqtt.Client(client_id= "Deploymeny-component", clean_session=True, userdata=None, transport="tcp")
+        client = mqtt.Client(client_id= "Deployment-component", clean_session=True, userdata=None, transport="tcp")
         client.on_connect = self.__on_connect
         client.on_message = self.__on_message
 
@@ -32,12 +28,14 @@ class MOMMQTTOutputGateway(object):
     
     def publish(self, topic: str, message: str) -> bool:
         try:            
-            result_pub = self.__mqtt_client.publish(topic, payload=json.dumps(message), qos=self.__qos)
+            result_pub = self.__mqtt_client.publish(topic, payload=json.dumps(message))
 
             pub_ok = False
             if result_pub.rc == mqtt.MQTT_ERR_SUCCESS:
                 timeout_counter = 0
                 pub_ok = result_pub.is_published()
+                import pdb
+                pdb.set_trace()
                 while not pub_ok and timeout_counter <= 1:
                     time.sleep(0.1)
                     timeout_counter += 0.1
@@ -67,5 +65,7 @@ class MOMMQTTOutputGateway(object):
             } 
         }
         
+        import pdb
+        pdb.set_trace()
         rc = self.publish('deployment-component', msg)
         return rc

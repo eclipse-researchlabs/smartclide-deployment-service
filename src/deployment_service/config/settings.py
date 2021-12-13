@@ -28,8 +28,7 @@ class Settings():
 
         self.mom = {
             'mom_host': os.environ['MOM_HOST'],
-            'mom_port': os.environ['MOM_PORT'] ,
-            'mom_topic': os.environ['MOM_TOPIC'],
+            'mom_port': os.environ['MOM_PORT']
         }
 
     def get_job_config(self, job_name, cvs_url, pipeline):

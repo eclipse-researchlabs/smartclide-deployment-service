@@ -73,7 +73,7 @@ async def delete_deployment(project):
         result = kubernetes_gw.delete_deployment(project)
         return JSONResponse(content={'message': 'Deployment was successfully deleted'}, status_code=200)
     except NotFoundError:
-        return JSONResponse(content={'message': 'Deployment not found'}, status_code=400)
+        return JSONResponse(content={'message': 'Deployment not found'}, status_code=404)
     except MaxRetryError:
         return JSONResponse(content={'message': 'Max retries'}, status_code=200)
     except Exception as ex:

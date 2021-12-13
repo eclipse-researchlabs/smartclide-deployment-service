@@ -51,6 +51,8 @@ class KubernetesDeploymentOutputGateway(object):
             # }
 
             return {
+                'id': service_result.to_dict()['metadata']['uid'],
+                'name': deployment_result.to_dict()['metadata']['name'],
                 'code': 200,
                 'message': 'Deployment running'
             }        
