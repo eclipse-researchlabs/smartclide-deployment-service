@@ -35,3 +35,10 @@ docker-compose up -d
 ```
 ## API documentantion 
 [http://localhost:3000/docs/](http://localhost:3000/docs/)
+
+## TODO
+- Provider interface, for connecting to different Kubernetes services like AWS. Now we just connect to a Bearer authenticated Kubernetes cluster
+- Publish services to an accesible uri
+- Integration with Kairos Interpreter
+- Integration and unit tests
+
