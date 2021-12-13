@@ -42,4 +42,3 @@ class BuildRepository(MongoRepo):
         except:
             import pdb
             pdb.set_trace()
-            # return self.__create_deployment_object([result])

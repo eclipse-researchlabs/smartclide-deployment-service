@@ -24,7 +24,3 @@ current-context: minikube
 kind: Config
 preferences: {}
 users:
-# - name: minikube
-#   user:
-#     client-certificate: /home/pberrocal/.minikube/profiles/minikube/client.crt
-#     client-key: /home/pberrocal/.minikube/profiles/minikube/client.key

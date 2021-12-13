@@ -11,6 +11,6 @@ def create_or_update_deployment(gateway, image, replicas, hostname, port):
         )
 
     if deployment_result:
-        return deployment_result
         # result = repo.create_or_update_deployment(deployment)
+        return deployment_result
 

@@ -10,10 +10,6 @@ class MongoRepo:
         return pymongo.MongoClient(
             self.host,
             port=self.port, 
-            # username=self.username, 
-            # password=self.password,
-            # authSource='deployment_service',
-            # authMechanism='SCRAM-SHA-1'
         )
         
         

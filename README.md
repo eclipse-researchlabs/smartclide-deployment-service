@@ -1,4 +1,4 @@
-# SamrtiCLIDE deployment component
+# SmartiCLIDE deployment component
 
 ### Create kuberbetes user and get your bearer
 ``` bash
