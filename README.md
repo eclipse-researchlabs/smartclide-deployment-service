@@ -17,7 +17,10 @@ kubectl config view | grep server | cut -f 2- -d ":" | tr -d " "
 ```bash 
 export KUBE_URL='<YOUR-KUBERNETES-URL>'
 export KUBE_BEARER='<YOUR-BEARER>'
-export GITLAB_URL='<YOUR-GITLAB-URL'
+```
+### Gitlab instance settings
+```bash 
+export GITLAB_URL='<YOUR-GITLAB-URL>'
 ```
 ### Run 
 ``` bash 
