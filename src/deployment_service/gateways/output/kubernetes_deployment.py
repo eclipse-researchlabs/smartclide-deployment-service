@@ -1,4 +1,6 @@
+from re import I
 import boto3
+from gitlab.v4.objects import settings
 from sqlalchemy.sql import expression
 from pick import pick
 
@@ -8,23 +10,25 @@ from kubernetes.dynamic.exceptions import ConflictError
 from kubernetes.client.exceptions import ApiException
 
 from deployment_service.config.logging import logger as l
-
+from deployment_service.config.settings import Settings
 class KubernetesDeploymentOutputGateway(object):
 
     def __init__(self):
-        aToken = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjBwakVVZ1BobWxaMlFjbFdIdnpJRDJCUHYtSlZuZ3UwdmZsZzlVVVI4OXMifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlZmF1bHQtdG9rZW4tN3doOTgiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGVmYXVsdCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6ImM5NzM5NWVkLWNiNDgtNDI3OC1hZjAzLTI5MzFmOTZmNjFlZCIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpkZWZhdWx0OmRlZmF1bHQifQ.LgcvAWOsbS7-Irni4D-_fCjtUzfUbpypA60FwBdli7LhsLptni3aesXeVEuIoyTW9ls0yK0yd2MB9cpOBqVn53BP22ra-f1dK1Tfv_aQh7ZwVRlTKpM9E1T6gQ5W_UVrI1mfegdoAHcLtAGtj-IslLUfsH2vAwmHOQszgbW9YShRYrXSyQeJLIkfJBIyCVLQI6L7YkMVsxiqmzildCGIO3pkwNep2EWrH_1mrAqdhpLEZs9K_GcJtr6GTMIogPvYkRgw3p_ahVlitUV80JeACGEHXD5B2sxxVRuWNLLEjEjtO_ZXGhhEmxQp1KRKawO8woJgcofmfBc3oZ9tN3o1Uw"
+        settings = Settings()
+        aToken = settings.kubernetes['kube_bearer']
         aConfiguration = client.Configuration()
-        aConfiguration.host = "<YOUR-KUNERNETES-IP-HERE>"
+        aConfiguration.host = settings.kubernetes['kube_host']
         aConfiguration.verify_ssl = False
 
         aConfiguration.api_key = {"authorization": "Bearer " + aToken}
-        aApiClient = client.ApiClient(aConfiguration)
+        self.aApiClient = client.ApiClient(aConfiguration)
+        # self.apps_v1 = client.AppsV1Api()
+        self.apps_v1 = client.AppsV1Api(self.aApiClient)
         config.load_config()
-        self.apps_v1 = client.AppsV1Api()
 
         
     def deploy(self, project, image, replicas, host, port):
-        networking_v1_beta1_api = client.NetworkingV1beta1Api()
+        networking_v1_beta1_api = client.NetworkingV1beta1Api(self.aApiClient)
         
         try:
             self.create_namespace(project)
@@ -37,7 +41,7 @@ class KubernetesDeploymentOutputGateway(object):
 
         try:
             deployment_result = self.create_deployment(self.apps_v1, deployment, project)            
-            service_result = self.create_service(client.CoreV1Api(), port, project)
+            service_result = self.create_service(client.CoreV1Api(self.aApiClient), port, project)
             ingress_result = self.create_ingress(networking_v1_beta1_api, project, host, port)
 
             # result = {
@@ -117,7 +121,7 @@ class KubernetesDeploymentOutputGateway(object):
             spec=client.V1ServiceSpec(
                 selector={"app": service_name},
                 ports=[client.V1ServicePort(
-                    port=80, 
+                    port=port, 
                     target_port=port
                 )]
             )
@@ -140,7 +144,7 @@ class KubernetesDeploymentOutputGateway(object):
                         paths=[client.NetworkingV1beta1HTTPIngressPath(
                             path="/",
                             backend=client.NetworkingV1beta1IngressBackend(
-                                service_port=80,
+                                service_port=port,
                                 service_name='{}-service'.format(ingress_name),
                             )
                         )]
@@ -178,7 +182,7 @@ class KubernetesDeploymentOutputGateway(object):
     
     def delete_service(self, name):
         client = dynamic.DynamicClient(
-            api_client.ApiClient(configuration=config.load_config())
+            self.aApiClient
         )
         api = client.resources.get(api_version="v1", kind="Service")
         service_deleted = api.delete(name=f'{name}-service', body={}, namespace=name)
@@ -186,7 +190,7 @@ class KubernetesDeploymentOutputGateway(object):
 
     def delete_ingress(self, name):
         client = dynamic.DynamicClient(
-            api_client.ApiClient(configuration=config.load_config())
+            self.aApiClient
         )
         # fetching the service api
         api = client.resources.get(api_version="v1", kind="Ingress")
@@ -204,9 +208,8 @@ class KubernetesDeploymentOutputGateway(object):
 
     def list_deployments(self):
         conf = client.configuration.Configuration()
-        conf.host = "http://localhost:3000"
-        with client.ApiClient(conf) as api_client:
-            api_instance = client.AppsV1Api(api_client)
+        with client.ApiClient(self.aApiClient) as api_client:
+            api_instance = client.AppsV1Api(self.aApiClient)
             allow_watch_bookmarks = True 
             _continue = '_continue_example' 
             field_selector = 'field_selector_example' 
@@ -230,8 +233,6 @@ class KubernetesDeploymentOutputGateway(object):
                 watch=False)
 
             l.debug(api_response)
-            import pdb
-            pdb.set_trace()
         
         except ApiException as e:
             l.debug("Exception when calling AppsV1Api->list_deployment_for_all_namespaces: %s\n" % e)
@@ -246,7 +247,7 @@ class KubernetesDeploymentOutputGateway(object):
     def create_namespace(self, name):
         # Creating a dynamic client
         client = dynamic.DynamicClient(
-            api_client.ApiClient(configuration=config.load_kube_config())
+            self.aApiClient
         )
 
         crd_api = client.resources.get(
@@ -266,9 +267,7 @@ class KubernetesDeploymentOutputGateway(object):
 
     def __get_api(self, resource):
         d_client = dynamic.DynamicClient(
-            api_client.ApiClient(
-                configuration=config.load_kube_config()
-            )
+            self.aApiClient
         )
         api = d_client.resources.get(api_version="apps/v1", kind=resource)
         return api
@@ -281,13 +280,3 @@ class KubernetesDeploymentOutputGateway(object):
         for stats in k8s_nodes['items']:
             if name in stats['metadata']['namespace']:
                 return stats['containers']                
-
-
-    def get_token(self, region_name: str ='us-west-2', aws_access_key_id: str ='AKIAUHL7KHCHVDWI2TCN', aws_secret_access_key: str = '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'):
-        eks_client = boto3.client(
-            'eks',
-            region_name=region_name,
-            aws_access_key_id=aws_access_key_id,
-            aws_secret_access_key=aws_secret_access_key,
-        )
-        eks_details = eks_client.describe_cluster(name='my_cluster')['cluster']

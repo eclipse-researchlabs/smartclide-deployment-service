@@ -19,8 +19,6 @@ async def run_deployment(
 
     try:
         result = create_or_update_deployment(kubernetes_gw, image, replicas, hostname, port)
-        import pdb
-        pdb.set_trace()
         if result.get('code') == 200:
             return JSONResponse(
                 content={'message': result.get('message')},

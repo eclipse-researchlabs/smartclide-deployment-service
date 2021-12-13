@@ -9,7 +9,12 @@ services:
       - 3000:3000
     volumes:
       - ./kube_config:/etc/kubernetes/admin.conf
-  # database:
+    
+    environment:
+      - KUBE_BEARER=${KUBE_BEARER}
+      - KUBE_HOST=${KUBE_HOST}
+
+      # database:
   #   image: "postgres" 
   #   env_file:
   #     - database.env 

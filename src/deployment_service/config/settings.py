@@ -1,4 +1,4 @@
-
+import os
 class Settings():
 
     def __init__(self):
@@ -9,13 +9,21 @@ class Settings():
                 'password': ''
             }
         }
+        
         self.api = {
             'host': '0.0.0.0', 
             'port': 6666
         } 
+
         self.gitlab = {
             'url': 'https://gitlab.dev.smartclide.eu/',
             'docker_url': 'tcp://docker:2375'
+        }
+
+        self.kubernetes = {
+            'kube_host': os.environ['KUBE_HOST'],
+            'kube_bearer': os.environ['KUBE_BEARER']
+
         }
 
 
