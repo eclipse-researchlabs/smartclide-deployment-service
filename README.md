@@ -14,14 +14,19 @@ kubectl config view | grep server | cut -f 2- -d ":" | tr -d " "
 
 
 ## Instrucctions for local deployment
-### Kubernetes cluster settings
+Export configuration variables
+
 ```bash 
+### Kubernetes cluster settings
 export KUBE_URL='<YOUR-KUBERNETES-URL>'
 export KUBE_BEARER='<YOUR-BEARER>'
-```
-### Gitlab instance settings
-```bash 
+
+# Gitlab instance settings
 export GITLAB_URL='<YOUR-GITLAB-URL>'
+
+# MOM component settings. The messages will be send to deployment-component topic of a MQTT broker
+export MOM_HOST=<MOM-HOST>
+export MOM_PORT=<MOM-PORT>
 ```
 
 ### Run 

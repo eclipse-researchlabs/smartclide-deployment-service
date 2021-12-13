@@ -4,7 +4,6 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y python3.
     python3.9-dev python3-pip libpq-dev
 
 COPY . /deployment_component
-
 WORKDIR "/deployment_component/src"
 
 RUN pip install -r requirements.txt

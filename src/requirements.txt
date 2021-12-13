@@ -9,3 +9,4 @@ pick
 boto3
 pymongo
 pytest
+paho-mqtt

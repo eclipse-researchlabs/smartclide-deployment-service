@@ -17,7 +17,6 @@ class Settings():
 
         self.gitlab = {
             'url': os.environ['GITLAB_URL'],
-            # 'url': 'https://gitlab.com/',
             'docker_url': 'tcp://docker:2375'
         }
 
@@ -27,6 +26,11 @@ class Settings():
 
         }
 
+        self.mom = {
+            'mom_host': os.environ['MOM_HOST'],
+            'mom_port': os.environ['MOM_PORT'] ,
+            'mom_topic': os.environ['MOM_TOPIC'],
+        }
 
     def get_job_config(self, job_name, cvs_url, pipeline):
         # return """<?xml version='1.1' encoding='UTF-8'?>
