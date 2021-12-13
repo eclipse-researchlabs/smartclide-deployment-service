@@ -9,6 +9,8 @@ from deployment_service.models.build import Build
 
 class GitlabPipelineOutputGateway():
     def __init__(self, project: str, gitlab_token: str):
+        import pdb
+        pdb.set_trace
         self.settings = Settings()
         self.project_name = project
         self.gl_client = self.get_gl_client(gitlab_token)

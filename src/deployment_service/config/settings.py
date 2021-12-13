@@ -16,12 +16,13 @@ class Settings():
         } 
 
         self.gitlab = {
-            'url': 'https://gitlab.dev.smartclide.eu/',
+            'url': os.environ['GITLAB_URL'],
+            # 'url': 'https://gitlab.com/',
             'docker_url': 'tcp://docker:2375'
         }
 
         self.kubernetes = {
-            'kube_host': os.environ['KUBE_HOST'],
+            'kube_host': os.environ['KUBE_URL'],
             'kube_bearer': os.environ['KUBE_BEARER']
 
         }

@@ -10,22 +10,18 @@ from deployment_service.gateways.output.gitlab_pipeline import GitlabPipelineOut
 from deployment_service.models.build import Build
 from deployment_service.use_cases.builds import build_project, get_build_status, build_list
 from deployment_service.repositories.mongo.build import BuildRepository
+from deployment_service.config.logging import logger as l
+
 router = APIRouter()
-
-
-# @router.get('/builds/')
-# async def read_builds(skip: int = 0, limit: int = 10, build__name: str = ''):
-
-#     return []
         
 @router.get('/builds/')
-async def get_builds_list(project: str, x_token: str = Header(None) ):
-    # gitlab_gw = GitlabPipelineOutputGateway(project, x_token)
+async def get_builds_list(project: str, gitlab_token: str = Header(None) ):
     try:
-        repository = BuildRepository()
-        builds = build_list(repository)
+        gitlab_gw = GitlabPipelineOutputGateway(project, gitlab_token)
+        builds = build_list(gitlab_gw)
         return JSONResponse(content=builds, status_code=200)
     except Exception as ex:
+        l.error(f'Error: {ex}')
         import traceback
         traceback.print_exc()
         return JSONResponse(content={'message': ex}, status_code=500)
@@ -35,14 +31,17 @@ async def get_project_latest_build(project: str, x_token: str = Header(None) ):
     try:
         gitlab_gw = GitlabPipelineOutputGateway(project, x_token)
         result = gitlab_gw.get_project_build_status()
-        # import pdb
-        # pdb.set_trace()
+
         if result:
             return JSONResponse(result)
         else:
-            import pdb
-            pdb.set_trace()
-            raise Exception('ssssssss')
+            return JSONResponse(
+                content={
+                    'state': '',
+                    'message': f'Project {project} not found'    
+                },
+                status_code=400
+            )
 
     except Exception as ex:
         import traceback
@@ -75,14 +74,7 @@ async def create_build(
             repository = BuildRepository()
             build = build_project(repository, gitlab_gw, branch, ci_file)
             if build:
-                return JSONResponse(
-                    content=build, 
-                    # {
-                    #     'state': 'pending',
-                    #     'message': f'Pipeline job started',
-                    # }, 
-                    status_code=200
-                )
+                return JSONResponse(content=build, status_code=200)
 
             else:
                 return JSONResponse(

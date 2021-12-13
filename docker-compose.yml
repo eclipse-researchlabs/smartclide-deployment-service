@@ -12,7 +12,8 @@ services:
     
     environment:
       - KUBE_BEARER=${KUBE_BEARER}
-      - KUBE_HOST=${KUBE_HOST}
+      - KUBE_URL=${KUBE_URL}
+      - GITLAB_URL=${GITLAB_URL}
 
       # database:
   #   image: "postgres" 
