@@ -1,21 +1,22 @@
 version: '3'
 
 services:
-  # deployment_service:
-  #   build: .
-  #   container_name: deployment_component
-  #   hostname: deployment_component
-  #   ports:
-  #     - 3000:3000
-
-  database:
-    image: "postgres" 
-    env_file:
-      - database.env 
-    volumes:
-      - database-data:/var/lib/postgresql/data/ 
+  deployment_service:
+    build: .
+    container_name: deployment_component
+    hostname: deployment_component
     ports:
-      - 5432:5432
+      - 3000:3000
+    volumes:
+      - ./kube_config:/etc/kubernetes/admin.conf
+  # database:
+  #   image: "postgres" 
+  #   env_file:
+  #     - database.env 
+  #   volumes:
+  #     - database-data:/var/lib/postgresql/data/ 
+  #   ports:
+  #     - 5432:5432
 
   # registry:
   #   image: registry:2

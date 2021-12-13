@@ -7,3 +7,5 @@ python-gitlab
 kubernetes
 pick
 boto3
+pymongo
+pytest

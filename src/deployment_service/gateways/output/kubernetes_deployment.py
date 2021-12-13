@@ -25,8 +25,6 @@ class KubernetesDeploymentOutputGateway(object):
         
     def deploy(self, project, image, replicas, host, port):
         networking_v1_beta1_api = client.NetworkingV1beta1Api()
-        import pytest
-        pytest.set_trace()
         
         try:
             self.create_namespace(project)
