@@ -1,4 +1,4 @@
-# SmartCLIDE deployment component
+# SmartCLIDE deployment service
 ## Prerequisites
 Gitlab instance hosted repo and access token, since we use gitlab-ci for contructing Docker images
 
@@ -26,6 +26,5 @@ export GITLAB_URL='<YOUR-GITLAB-URL>'
 ``` bash 
 docker-compose up -d 
 ```
-### API documentantion 
-```bash
-http://localhost:3000/docs/
+## API documentantion 
+[http://localhost:3000/docs/]
