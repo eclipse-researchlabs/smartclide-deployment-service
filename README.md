@@ -12,6 +12,7 @@ kubectl -n kube-system describe secret $(sudo kubectl -n kube-system get secret 
 kubectl config view | grep server | cut -f 2- -d ":" | tr -d " "
 ```
 
+
 ## Instrucctions for local deployment
 ### Kubernetes cluster settings
 ```bash 
@@ -22,9 +23,10 @@ export KUBE_BEARER='<YOUR-BEARER>'
 ```bash 
 export GITLAB_URL='<YOUR-GITLAB-URL>'
 ```
+
 ### Run 
 ``` bash 
 docker-compose up -d 
 ```
 ## API documentantion 
-[http://localhost:3000/docs/]
+[http://localhost:3000/docs/](http://localhost:3000/docs/)
