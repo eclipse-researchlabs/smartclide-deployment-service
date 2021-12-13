@@ -1,0 +1,9 @@
+uvicorn
+fastapi
+sqlalchemy
+psycopg2
+requests
+python-gitlab
+kubernetes
+pick
+boto3
