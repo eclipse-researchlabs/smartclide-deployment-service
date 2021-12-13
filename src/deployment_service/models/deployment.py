@@ -1,6 +1,6 @@
 from abc import ABCMeta
 from pydantic.dataclasses import dataclass
-# from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict
 from datetime import datetime
 
 from gitlab.v4.objects import deployments

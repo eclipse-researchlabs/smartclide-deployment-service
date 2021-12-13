@@ -29,3 +29,5 @@ class Build():
     def to_dict(self):
         return asdict(self)
 
+    # def __str__(self):
+    #     return f'Deployment({self.project}, {self.status}, {self.image}, {self.branch}, {self.started_at}, {self.finished_at}, {self.duration}, {self.username}, {self.avatar_url}, {self.commit_id}, {self.commit_msg}, {self.committer_name})'

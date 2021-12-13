@@ -1,5 +1,5 @@
-def list_deployments(repo):
-    return repo.list()
+def get_deployments_list(gateway):
+    return gateway.list_deployments()
 
 def create_or_update_deployment(gateway, image, replicas, hostname, port):    
     deployment_result = gateway.deploy(

@@ -9,7 +9,7 @@ from deployment_service.models.build import Build
 from deployment_service.gateways.output.gitlab_pipeline import GitlabPipelineOutputGateway
 from deployment_service.models.build import Build
 from deployment_service.use_cases.builds import build_project, get_build_status, build_list
-
+from deployment_service.repositories.mongo.build import BuildRepository
 router = APIRouter()
 
 
@@ -20,9 +20,10 @@ router = APIRouter()
         
 @router.get('/builds/')
 async def get_builds_list(project: str, x_token: str = Header(None) ):
-    gitlab_gw = GitlabPipelineOutputGateway(project, x_token)
+    # gitlab_gw = GitlabPipelineOutputGateway(project, x_token)
     try:
-        builds = build_list(gitlab_gw)
+        repository = BuildRepository()
+        builds = build_list(repository)
         return JSONResponse(content=builds, status_code=200)
     except Exception as ex:
         import traceback
@@ -71,7 +72,8 @@ async def create_build(
             )
 
         else:
-            build = build_project(gitlab_gw, branch, ci_file)
+            repository = BuildRepository()
+            build = build_project(repository, gitlab_gw, branch, ci_file)
             if build:
                 return JSONResponse(
                     content=build, 

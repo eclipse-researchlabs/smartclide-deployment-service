@@ -1,12 +1,12 @@
 version: '3'
 
 services:
-  deployment_service:
-    build: .
-    container_name: deployment_component
-    hostname: deployment_component
-    ports:
-      - 3000:3000
+  # deployment_service:
+  #   build: .
+  #   container_name: deployment_component
+  #   hostname: deployment_component
+  #   ports:
+  #     - 3000:3000
 
   database:
     image: "postgres" 

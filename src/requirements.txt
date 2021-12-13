@@ -1,8 +1,9 @@
 uvicorn
 fastapi
-gitlab
 sqlalchemy
 psycopg2
 requests
 python-gitlab
 kubernetes
+pick
+boto3
