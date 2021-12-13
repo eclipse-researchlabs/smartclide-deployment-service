@@ -25,8 +25,8 @@ export KUBE_BEARER='<YOUR-BEARER>'
 export GITLAB_URL='<YOUR-GITLAB-URL>'
 
 # MOM component settings. The messages will be send to deployment-component topic of a MQTT broker
-export MOM_HOST=<MOM-HOST>
-export MOM_PORT=<MOM-PORT>
+export MOM_HOST='<MOM-HOST>'
+export MOM_PORT='<MOM-PORT>'
 ```
 
 ### Run 
