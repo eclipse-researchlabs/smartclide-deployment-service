@@ -34,8 +34,6 @@ class MOMMQTTOutputGateway(object):
             if result_pub.rc == mqtt.MQTT_ERR_SUCCESS:
                 timeout_counter = 0
                 pub_ok = result_pub.is_published()
-                import pdb
-                pdb.set_trace()
                 while not pub_ok and timeout_counter <= 1:
                     time.sleep(0.1)
                     timeout_counter += 0.1
@@ -63,6 +61,6 @@ class MOMMQTTOutputGateway(object):
                 "id": service_id, 
                 "name": service_name 
             } 
-
+        }
         rc = self.publish('deployment-component', msg)
         return rc
