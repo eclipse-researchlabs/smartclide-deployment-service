@@ -63,9 +63,6 @@ class MOMMQTTOutputGateway(object):
                 "id": service_id, 
                 "name": service_name 
             } 
-        }
-        
-        import pdb
-        pdb.set_trace()
+
         rc = self.publish('deployment-component', msg)
         return rc
