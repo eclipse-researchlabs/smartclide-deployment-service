@@ -1,7 +1,7 @@
 from re import A
 import gitlab
 from gitlab.cli import docs
-from gitlab.v4.objects import triggers
+from gitlab.v4.objects import projects, triggers
 
 from deployment_service.config.settings import Settings
 from deployment_service.config.logging import logger as l
@@ -9,8 +9,6 @@ from deployment_service.models.build import Build
 
 class GitlabPipelineOutputGateway():
     def __init__(self, project: str, gitlab_token: str):
-        import pdb
-        pdb.set_trace
         self.settings = Settings()
         self.project_name = project
         self.gl_client = self.get_gl_client(gitlab_token)
@@ -51,15 +49,32 @@ class GitlabPipelineOutputGateway():
         return project.triggers.create({'description': trigger_decription})
 
     def build(self, branch: str, ci_file: dict):
-        trigger = self.get_or_create_trigger(self.project)
-        # variables = {'CI_JOB_TOKEN': trigger.token}
-        variables = {
-            'IMAGE_NAME': f'{self.username}/{self.project_name}',
-            # 'DOCKER_HOST': 'tcp://docker:2375'
-        }
-        result = self.project.trigger_pipeline(branch, trigger.token, variables=variables)
-        if result:
-            return self.get_project_build_status()
+        project = self.get_current_project(self.project_name)
+        try:
+            f = project.files.get(file_path='.gitlab-ci.yml', ref=branch)
+        except:
+            user_id = self.project.users.list()[0].get_id()
+            email = self.gl_client.users.get(user_id).public_email
+            f = project.files.create({
+                'file_path': 'gitlab-ci.yml',
+                'branch': branch,
+                'content': ci_file,
+                'author_email': email,
+                'author_name': self.username,
+                'encoding': 'text',
+                'commit_message': 'Create .gitlab-ci.yml file'})
+            pass
+        if f:
+            trigger = self.get_or_create_trigger(self.project)
+            # variables = {'CI_JOB_TOKEN': trigger.token}
+            # variables = {
+            #     'IMAGE_NAME': f'{self.repo_owner}/{self.project_name}',
+            #     # 'DOCKER_HOST': 'tcp://docker:2375'
+            # }
+            result = self.project.trigger_pipeline(branch, trigger.token) #, variables=variables)
+            if result:
+                return self.get_project_build_status()
+            else: return False
         else: return False
 
     def get_project_build_status(self):
@@ -82,7 +97,7 @@ class GitlabPipelineOutputGateway():
             user = job.user['username']
             results.append({
                 'status': status,
-                'image': f'{user}/{project}',  
+                'image': f'{self.repo_owner}/{project}',  
                 'job': job.attributes
             })
         return self.create_build_objects(results)
