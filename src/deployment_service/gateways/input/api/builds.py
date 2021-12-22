@@ -4,6 +4,7 @@ from typing import List, Optional
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from urllib.parse import unquote, urlparse
 
 from deployment_service.models.build import Build
 from deployment_service.gateways.output.gitlab_pipeline import GitlabPipelineOutputGateway
@@ -17,6 +18,7 @@ router = APIRouter()
 @router.get('/builds/')
 async def get_builds_list(project: str, gitlab_token: str = Header(None) ):
     try:
+        # project = urlparse(project_url).path[1:]
         gitlab_gw = GitlabPipelineOutputGateway(project, gitlab_token)
         builds = build_list(gitlab_gw)
         return JSONResponse(content=builds, status_code=200)
@@ -31,7 +33,7 @@ async def get_project_latest_build(project: str, x_token: str = Header(None) ):
     try:
         gitlab_gw = GitlabPipelineOutputGateway(project, x_token)
         result = gitlab_gw.get_project_build_status()
-
+        
         if result:
             return JSONResponse(result)
         else:
@@ -59,8 +61,10 @@ async def create_build(
     ci_file: dict = Body(None)):
 
     try:
+        # project = urlparse(project_url).path[1:]
         gitlab_gw = GitlabPipelineOutputGateway(project, x_token)
         status = get_build_status(gitlab_gw)
+
         if status == 'running':
             return JSONResponse(
                 content={

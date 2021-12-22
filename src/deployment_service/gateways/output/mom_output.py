@@ -63,6 +63,6 @@ class MOMMQTTOutputGateway(object):
                 "id": service_id, 
                 "name": service_name 
             } 
-
+        }
         rc = self.publish('deployment-component', msg)
         return rc
