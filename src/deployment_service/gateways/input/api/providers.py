@@ -1,6 +1,6 @@
 
 from fastapi.responses import JSONResponse
-from deployment_service.gateways.output.kubernetes_deployment import KubernetesDeploymentOutputGateway
+from deployment_service.gateways.output.deploy.kubernetes import KubernetesDeploymentOutputGateway
 from fastapi.encoders import jsonable_encoder
 from fastapi import APIRouter
 

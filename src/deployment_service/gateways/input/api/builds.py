@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Header, Depends, Body
+from fastapi.responses import FileResponse
+
 from typing import List, Optional
 # from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -7,10 +9,11 @@ from pydantic import BaseModel
 from urllib.parse import unquote, urlparse
 
 from deployment_service.models.build import Build
-from deployment_service.gateways.output.gitlab_pipeline import GitlabPipelineOutputGateway
+from deployment_service.gateways.output.build.gitlab import GitlabPipelineOutputGateway
 from deployment_service.models.build import Build
 from deployment_service.use_cases.builds import build_project, get_build_status, build_list
 from deployment_service.repositories.mongo.build import BuildRepository
+from deployment_service.gateways.input.git.git_input import GitInputGateway
 from deployment_service.config.logging import logger as l
 
 router = APIRouter()
@@ -29,9 +32,9 @@ async def get_builds_list(project: str, gitlab_token: str = Header(None) ):
         return JSONResponse(content={'message': ex}, status_code=500)
 
 @router.get('/builds/{project}')
-async def get_project_latest_build(project: str, x_token: str = Header(None) ):
+async def get_project_latest_build(project: str, gitlab_token: str = Header(None) ):
     try:
-        gitlab_gw = GitlabPipelineOutputGateway(project, x_token)
+        gitlab_gw = GitlabPipelineOutputGateway(project, gitlab_token)
         result = gitlab_gw.get_project_build_status()
         
         if result:
@@ -56,13 +59,13 @@ async def get_project_latest_build(project: str, x_token: str = Header(None) ):
 @router.post('/builds')
 async def create_build(
     project: str, 
-    x_token: str = Header(None), 
+    gitlab_token: str = Header(None), 
     branch: str = 'master', 
     ci_file: dict = Body(None)):
 
     try:
         # project = urlparse(project_url).path[1:]
-        gitlab_gw = GitlabPipelineOutputGateway(project, x_token)
+        gitlab_gw = GitlabPipelineOutputGateway(project, gitlab_token)
         status = get_build_status(gitlab_gw)
 
         if status == 'running':
@@ -98,3 +101,25 @@ async def create_build(
             }, 
             status_code=500)
 
+@router.get('/builds/ci-cd-file/{project_name}')
+async def get_ci_cd_file(project_name: str):
+    try:
+        git_gw = GitInputGateway()
+        fpath = git_gw.write_cdci_file(f'/tmp/repos/{project_name}')
+        
+        if fpath:
+            return FileResponse(fpath, filename='gitlab-ci.yml')
+        else:
+                return JSONResponse(
+                    content={
+                        'message': f'Failed to create CI/CD file for project {project_name}'    
+                    },
+                    status_code=500
+                )
+
+    except Exception as ex:
+        import traceback
+        traceback.print_exc()
+        JSONResponse(content={
+            'message': ex
+        })

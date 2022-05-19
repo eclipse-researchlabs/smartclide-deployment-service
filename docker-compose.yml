@@ -11,10 +11,19 @@ services:
       - ./kube_config:/etc/kubernetes/admin.conf
     
     environment:
-      - KUBE_BEARER=${KUBE_BEARER}
-      - KUBE_URL=${KUBE_URL}
       - GITLAB_URL=${GITLAB_URL}
+      - MOM_HOST=${MOM_HOST}
+      - MOM_PORT=${MOM_PORT}
 
+  rabbitmq:
+    image: "rabbitmq:latest"
+    ports:
+      - "15672:15672"
+      - "5671:5671"
+      - "4369:4369"
+      - "25672:25672" 
+      - "5672:5672" 
+      - "15671:15671"
       # database:
   #   image: "postgres" 
   #   env_file:

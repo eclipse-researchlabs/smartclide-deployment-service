@@ -1,6 +1,6 @@
 import pytest
 from deployment_service.config.settings import Settings
-from deployment_service.gateways.output.jenkins_pipeline import JenkinsOutputGateway
+from deployment_service.gateways.output.build.jenkins import JenkinsOutputGateway
 
 class TestJenkins(object):
 

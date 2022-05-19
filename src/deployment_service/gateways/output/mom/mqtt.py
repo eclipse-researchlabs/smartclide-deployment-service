@@ -2,12 +2,12 @@ from logging import setLoggerClass
 import time
 import paho.mqtt.client as mqtt
 import json
-
+from deployment_service.gateways.output.mom.output import MOMOutput
 from deployment_service.config.logging import logger as l
 from deployment_service.config.settings import Settings
 
 
-class MOMMQTTOutputGateway(object):
+class MOMMQTTOutputGateway(MOMOutput):
 
     def __init__(self):
         settings = Settings()
@@ -34,8 +34,6 @@ class MOMMQTTOutputGateway(object):
             if result_pub.rc == mqtt.MQTT_ERR_SUCCESS:
                 timeout_counter = 0
                 pub_ok = result_pub.is_published()
-                import pdb
-                pdb.set_trace()
                 while not pub_ok and timeout_counter <= 1:
                     time.sleep(0.1)
                     timeout_counter += 0.1

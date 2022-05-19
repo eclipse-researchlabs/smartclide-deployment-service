@@ -7,7 +7,6 @@ from deployment_service.models.build import Build
 
 @dataclass
 class Service():
-    # build: Build
     name: str
     ipv4: str
     port: int
