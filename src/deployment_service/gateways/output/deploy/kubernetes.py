@@ -25,7 +25,7 @@ class KubernetesDeploymentOutputGateway(object):
             self.create_ingress(name, host, port)
             return deployment
         except Exception as d_ex:
-            # import traceback; traceback.print_exc()
+            import traceback; traceback.print_exc()
             l.error('{}: Failed to deploy.'.format(d_ex))
             return False
 
@@ -91,7 +91,8 @@ class KubernetesDeploymentOutputGateway(object):
                 )]
             )
         )
-
+        core_v1_api.create_namespaced_service(namespace=name, body=body)
+        return True
 
     def create_ingress(self, name, host, port):
         body = client.V1Ingress(
