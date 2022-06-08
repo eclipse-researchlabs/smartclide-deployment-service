@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from urllib.parse import unquote, urlparse
 
 from deployment_service.models.build import Build
-from deployment_service.gateways.output.build.gitlab import GitlabPipelineOutputGateway
+from deployment_service.gateways.output.deploy import GitlabPipelineOutputGateway
 from deployment_service.models.build import Build
 from deployment_service.use_cases.builds import build_project, get_build_status, build_list
 from deployment_service.repositories.mongo.build import BuildRepository

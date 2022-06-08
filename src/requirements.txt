@@ -23,7 +23,6 @@ paho-mqtt==1.6.1
 pick==1.2.0
 pika==1.2.0
 pluggy==1.0.0
-psycopg2==2.9.3
 py==1.11.0
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
