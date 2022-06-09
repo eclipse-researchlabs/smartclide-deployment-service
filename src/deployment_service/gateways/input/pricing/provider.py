@@ -45,13 +45,10 @@ class KubernetesPricingProvider():
             self.get_competitor_prices(option="stop")
             self.prices = {"My price":self.total_price,**self.competitor_prices}
 
-            print(self.prices)
-
-            return self.total_price
+            return self.prices
         except Exception as e:
             l.error('{}: Failed to stopping Kubernets Pricing Provider for Kubernetes.'.format(e))
             return False
-
 
     def get_competitor_prices(self,option):
         try:
