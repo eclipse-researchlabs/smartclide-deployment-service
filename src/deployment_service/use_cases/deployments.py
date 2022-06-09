@@ -8,8 +8,8 @@ def get_deployments_list(gateway):
     return gateway.list_deployments()
 
 def create_or_update_deployment(k8s_url, k8s_token, name, username, port, replicas, hostname):   
-    k_w = KubernetesDeploymentOutputGateway(k8s_url, k8s_token) 
-    deployment_result = k_w.run(
+    k_gw = KubernetesDeploymentOutputGateway(k8s_url, k8s_token) 
+    deployment_result = k_gw.run(
             name=name, 
             image=f'{username}/{name}', 
             replicas=int(replicas),

@@ -33,8 +33,8 @@ class GitInputGateway(object):
         try:
             git_repo = Repo(repo_path)
             with git_repo.config_writer() as git_config:
-                git_config.set_value('user', 'email', 'someone@example.com')
                 git_config.set_value('user', 'name', 'John Doe')
+                git_config.set_value('user', 'email', 'someone@example.com')
             
             if git_repo.is_dirty(untracked_files=True):
                 git_repo.index.add(['.gitlab-ci.yml'])
@@ -48,12 +48,7 @@ class GitInputGateway(object):
     def update_remote(self, repo_path, remote_url):
         try:
             git_repo = Repo(repo_path)
-            # git_repo.delete_remote('origin')
-            # import pytest
-            # pytest.set_trace()
             origin = git_repo.remotes[0].set_url(new_url=remote_url)
-            # git_repo.create_head('master', origin.refs.master)
-            # git_repo.head.set_reference(origin)            
             return True
 
         except Exception as ex:

@@ -15,11 +15,7 @@ router = APIRouter()
 mongo_repo = MongoDeploymentRepository()
 
 @router.get('/deployments/')
-async def list_deployments(
-    user: str,
-    project: str, 
-    skip: int = 0, 
-    limit: int = 10):
+async def list_deployments(user: str, project: str, skip: int = 0, limit: int = 10):
 
     try:
         deployments = mongo_repo.list_deployments(user, project, skip, limit)
