@@ -14,6 +14,7 @@ class KubernetesPricingProvider():
         #self.setting = Settings()
         self.kubernetes_provider= ""
         self.total_price = 0
+        self.prices = {}
         self.provider_url = provider_url
         self.competitor_prices = {}
       
@@ -42,10 +43,10 @@ class KubernetesPricingProvider():
             self.total_price = self.kubernetes_provider.stop()
 
             self.get_competitor_prices(option="stop")
+            self.prices = {"My price":self.total_price,**self.competitor_prices}
 
-            print(self.competitor_prices,"precios competidor")
+            print(self.prices)
 
-            print(self.total_price,"precio_total")
             return self.total_price
         except Exception as e:
             l.error('{}: Failed to stopping Kubernets Pricing Provider for Kubernetes.'.format(e))
