@@ -20,6 +20,7 @@ class KubernetesDeploymentOutputGateway(object):
         
     def run(self, name, image, port, replicas, host):
         try:
+            self.create_namespace(name)
             deployment = self.create_deployment(name, image, port, replicas)
             self.create_service(name, port)
             self.create_ingress(name, host, port)
