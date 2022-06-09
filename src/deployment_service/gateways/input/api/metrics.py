@@ -1,19 +1,15 @@
 
+from fastapi import APIRouter, Header
 from fastapi.responses import JSONResponse
 from deployment_service.gateways.output.deploy.kubernetes import KubernetesDeploymentOutputGateway
 from deployment_service.repositories.mongo.deployment import MongoDeploymentRepository
 
-from fastapi.encoders import jsonable_encoder
-from fastapi import APIRouter, Header
 
 router = APIRouter()
 mongo_repo = MongoDeploymentRepository()
 
-
 @router.get('/metrics/{id}')
-async def metrics(
-    id: str,
-    k8s_token: str = Header(None)):
+async def metrics(id: str, k8s_token: str = Header(None)):
     
     try:
         deployment = mongo_repo.show_deployment(id)
