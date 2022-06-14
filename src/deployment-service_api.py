@@ -6,8 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from deployment_service.config.logging import logger as l
 from deployment_service.gateways.input.api.metrics import router as metrics_router
 from deployment_service.gateways.input.api.deployments import router as deployments_router
-from deployment_service.gateways.input.api.builds import router as builds_router
-from deployment_service.gateways.input.api.providers import router as providers_router
+# from deployment_service.gateways.input.api.builds import router as builds_router
+# from deployment_service.gateways.input.api.providers import router as providers_router
 
 # settings = Settings()
 host = '0.0.0.0'

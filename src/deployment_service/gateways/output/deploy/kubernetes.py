@@ -20,6 +20,7 @@ class KubernetesDeploymentOutputGateway(object):
         
     def run(self, name, image, port, replicas, host):
         try:
+            self.create_namespace(name)
             deployment = self.create_deployment(name, image, port, replicas)
             self.create_service(name, port)
             self.create_ingress(name, host, port)
@@ -122,18 +123,11 @@ class KubernetesDeploymentOutputGateway(object):
             )
         )
 
-        self.networking_v1_api.create_namespaced_ingress(
-            namespace=name,
-            body=body
-        )
+        self.networking_v1_api.create_namespaced_ingress(namespace=name, body=body)
         return True
 
     def create_namespace(self, name):
-        # Creating a dynamic client
-
-        client = dynamic.DynamicClient(
-            self.aApiClient)
-
+        client = dynamic.DynamicClient(self.aApiClient)
         namespace_api = client.resources.get(api_version="v1", kind="Namespace")
         namespace_manifest = {
             "apiVersion": "v1",
@@ -146,36 +140,26 @@ class KubernetesDeploymentOutputGateway(object):
         namespace_api.create(body=namespace_manifest)
 
     def delete_deployment(self, name):
-        client = dynamic.DynamicClient(
-            self.aApiClient
-        )        
+        client = dynamic.DynamicClient(self.aApiClient)
         api = client.resources.get(api_version="v1", kind="Deployment")
         service_deleted = api.delete(name=name, body={}, namespace=name)
         return service_deleted
         
     def delete_service(self, name):
-        client = dynamic.DynamicClient(
-            self.aApiClient
-        )
+        client = dynamic.DynamicClient(self.aApiClient)
         api = client.resources.get(api_version="v1", kind="Service")
         service_deleted = api.delete(name=name, body={}, namespace=name)
         return service_deleted
 
     def delete_ingress(self, name):
-        client = dynamic.DynamicClient(
-            self.aApiClient
-        )
-        # fetching the service api
+        client = dynamic.DynamicClient(self.aApiClient)
         api = client.resources.get(api_version="v1", kind="Ingress")
         ingress_deleted = api.delete(name=name, body={}, namespace=name)
         return ingress_deleted
 
     def deployment_status(self, name):
         try:
-            client = dynamic.DynamicClient(
-                self.aApiClient
-            )
-            # fetching the service api
+            client = dynamic.DynamicClient(self.aApiClient)
             api = client.resources.get(api_version="v1", kind="Deployment")
             deployment = api.get(name=name, namespace=name)
             return deployment.status
@@ -218,7 +202,6 @@ class KubernetesDeploymentOutputGateway(object):
         config.load_kube_config()
         api = client.CustomObjectsApi()
         k8s_nodes = api.list_cluster_custom_object("metrics.k8s.io", "v1beta1", "pods")
-
         for stats in k8s_nodes['items']:
             if name in stats['metadata']['namespace']:
                 return stats['containers']
