@@ -1,19 +1,19 @@
 version: '3'
 
 services:
-  deployment_service:
-    build: .
-    container_name: deployment_component
-    hostname: deployment_component
-    ports:
-      - 3000:3000
-    volumes:
-      - ./kube_config:/etc/kubernetes/admin.conf
-    
-    environment:
-      - GITLAB_URL=${GITLAB_URL}
-      - MOM_HOST=${MOM_HOST}
-      - MOM_PORT=${MOM_PORT}
+  #deployment_service:
+  #  build: .
+  #  container_name: deployment_component
+  #  hostname: deployment_component
+  #  ports:
+  #    - 3000:3000
+  #  volumes:
+  #    - ./kube_config:/etc/kubernetes/admin.conf
+  #  
+  #  environment:
+  #    - GITLAB_URL=${GITLAB_URL}
+  #    - MOM_HOST=${MOM_HOST}
+  #    - MOM_PORT=${MOM_PORT}
 
   rabbitmq:
     image: "rabbitmq:latest"
@@ -56,6 +56,13 @@ services:
   #     - /home/pberrocal/dev/:/var/jenkins_home/workspace/
   #     - /var/run/docker.sock:/var/run/docker.sock
   #     - /usr/local/bin/docker:/usr/local/bin/docker
-
+  mongo:
+        image: mongo:latest
+        hostname: mongo
+        container_name: mongo
+        volumes:
+            - ./data:/data/db
+        ports:
+            - 27017:27017
 volumes:
   database-data: 
