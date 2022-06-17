@@ -20,10 +20,12 @@ class KubernetesPricingProvider():
       
         self.kubernetes_competitor_provider_1= ""
         self.kubernetes_competitor_provider_1_name= ""
+        self.kubernetes_competitor_provider_1_cost_type = ""
         self.price_competitor_1 = 0
         
         self.kubernetes_competitor_provider_2= ""
         self.kubernetes_competitor_provider_2_name= ""
+        self.kubernetes_competitor_provider_2_cost_type = ""
         self.price_competitor_2 = 0
 
     def run(self):
@@ -43,7 +45,26 @@ class KubernetesPricingProvider():
             self.total_price = self.kubernetes_provider.stop()
 
             self.get_competitor_prices(option="stop")
-            self.prices = {"My price":self.total_price,**self.competitor_prices}
+            self.prices = [
+                            {
+                            "name":self.kubernetes_provider,
+                            "cost":self.total_price,
+                            "current":True, 
+                            "cost_type": "CPU"
+                            },
+                            {
+                            "name":self.kubernetes_competitor_provider_1_name,
+                            "cost":self.price_competitor_1,
+                            "current":False, 
+                            "cost_type":self.kubernetes_competitor_provider_1_cost_type
+                            },
+                            {
+                            "name":self.kubernetes_competitor_provider_2_name,
+                            "cost":self.price_competitor_2,
+                            "current":False, 
+                            "cost_type":self.kubernetes_competitor_provider_2_cost_type
+                            },
+                        ]
 
             return self.prices
         except Exception as e:
@@ -56,10 +77,11 @@ class KubernetesPricingProvider():
                 if type(self.kubernetes_provider) == KubernetesPricingAzure:
                     self.kubernetes_competitor_provider_1 = KubernetesPricingAWS()
                     self.kubernetes_competitor_provider_1_name = "Amazon Web Service"
+                    self.kubernetes_competitor_provider_1_cost_type = "Per CPU"
                     
                     self.kubernetes_competitor_provider_2 = KubernetesPricingGoogleCloud()
                     self.kubernetes_competitor_provider_2_name = "Google Cloud"
-
+                    self.kubernetes_competitor_provider_2_cost_type = "Demand"
 
                     self.kubernetes_competitor_provider_1.run()
                     self.kubernetes_competitor_provider_2.run()
@@ -68,9 +90,11 @@ class KubernetesPricingProvider():
                 if type(self.kubernetes_provider) == KubernetesPricingAWS:
                     self.kubernetes_competitor_provider_1 = KubernetesPricingAzure()
                     self.kubernetes_competitor_provider_1_name = "Microsoft Azure"
+                    self.kubernetes_competitor_provider_2_cost_type = "Demand"
 
                     self.kubernetes_competitor_provider_2 = KubernetesPricingGoogleCloud()
                     self.kubernetes_competitor_provider_2_name = "Google Cloud"
+                    self.kubernetes_competitor_provider_2_cost_type = "Demand"
 
                     self.kubernetes_competitor_provider_1.run()
                     self.kubernetes_competitor_provider_2.run()
@@ -79,9 +103,11 @@ class KubernetesPricingProvider():
                 if type(self.kubernetes_provider) == KubernetesPricingGoogleCloud:
                     self.kubernetes_competitor_provider_1 = KubernetesPricingAWS()
                     self.kubernetes_competitor_provider_1_name = "Amazon Web Service"
+                    self.kubernetes_competitor_provider_2_cost_type = "Per CPU"
 
                     self.kubernetes_competitor_provider_2 = KubernetesPricingAzure()
                     self.kubernetes_competitor_provider_2_name = "Microsoft Azure"
+                    self.kubernetes_competitor_provider_2_cost_type = "Demand"
 
                     self.kubernetes_competitor_provider_1.run()
                     self.kubernetes_competitor_provider_2.run()
@@ -114,10 +140,3 @@ class KubernetesPricingProvider():
             l.error('{}: Failed to getting Kubernets Pricing Provider for Kubernetes.'.format(e))
             return False
 
-if __name__ == "__main__":
-    pricingKubernets = KubernetesPricingProvider("https://container.googleapis.com")
-    pricingKubernets.run()
-
-    time.sleep(10)
-
-    pricingKubernets.stop()

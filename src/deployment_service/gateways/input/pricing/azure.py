@@ -58,12 +58,3 @@ class KubernetesPricingAzure(object):
             return False
 
 
-if __name__=="__main__":
-
-    azurePricing = KubernetesPricingAzure()
-    azurePricing.run()
-    time.sleep(20)
-
-    azurePricing.stop()
-
-

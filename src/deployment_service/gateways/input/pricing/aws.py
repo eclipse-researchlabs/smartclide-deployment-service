@@ -77,12 +77,3 @@ class KubernetesPricingAWS(object):
             print(e)
             l.error('{}: Failed to getting  AWS client for Kubernetes.'.format(e))
             return False
-
-if __name__=="__main__":
-    awsPricing = KubernetesPricingAWS()
-    awsPricing.run()
-    
-    time.sleep(20)
-
-    awsPricing.stop()
-

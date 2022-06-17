@@ -53,12 +53,3 @@ class KubernetesPricingGoogleCloud(object):
             l.error('{}: Failed to getting  Google Cloud pricing for Kubernetes.'.format(e))
             return False
 
-
-if __name__=="__main__":
-    gCloudPricing = KubernetesPricingGoogleCloud()
-    gCloudPricing.run()
-    time.sleep(20)
-
-    gCloudPricing.stop()
-
-
