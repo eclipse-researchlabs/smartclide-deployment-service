@@ -2,6 +2,7 @@ from kubernetes.dynamic.exceptions import NotFoundError, ApiException
 from urllib3.exceptions import MaxRetryError
 from fastapi import APIRouter, Query, Header
 from typing import Optional
+import json
 from fastapi.responses import JSONResponse
 from deployment_service.gateways.output.deploy.kubernetes import KubernetesDeploymentOutputGateway
 from deployment_service.repositories.mongo.deployment import MongoDeploymentRepository
@@ -64,9 +65,12 @@ async def run_deployment(
     try:
         result = create_or_update_deployment(k8s_url, k8s_token, project_name, user, deployment_port, replicas, hostname)
         if result:
-            return JSONResponse(content = result,status_code = 200 )
-        else:
-            return JSONResponse(content={'message': 'Deployment already running'}, status_code=409)
+            if hasattr(result, 'body'):
+                return JSONResponse(content={'message': json.loads(result.body)['message']}, status_code=result.status)
+            else:
+                return JSONResponse(content = result,status_code = 200 )
+        # else:
+        #     return JSONResponse(content={'message': 'Deployment already running'}, status_code=409)
 
     except Exception as ex:
         import traceback; traceback.print_exc()

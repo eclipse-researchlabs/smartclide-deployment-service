@@ -60,7 +60,6 @@ class KubernetesPricingAWS(object):
             return float(price)
 
         except Exception as e:
-            print(e)
             l.error('{}: Failed to getting  AWS pricing for Kubernetes.'.format(e))
             return False
 

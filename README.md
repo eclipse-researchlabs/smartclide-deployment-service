@@ -10,9 +10,9 @@ Running Kubernetes instance and an access bearer (see below), becouse we use a k
 kubectl create serviceaccount k8sadmin -n kube-system
 # Create role 
 kubectl create clusterrolebinding k8sadmin --clusterrole=cluster-admin --serviceaccount=kube-system:k8sadmin
-# Create secret
+# Create and print secret
 kubectl -n kube-system describe secret $(sudo kubectl -n kube-system get secret | (grep k8sadmin || echo "$_") | awk '{print $1}') | grep token: | awk '{print $2}'
-# Print your token
+# Print k8 url
 kubectl config view | grep server | cut -f 2- -d ":" | tr -d " "
 ```
 
