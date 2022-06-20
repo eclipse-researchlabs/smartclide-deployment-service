@@ -11,6 +11,7 @@ class KubernetesPricingAWS(object):
         self.aws_access_key_id='AKIAUHL7KHCHVDWI2TCN'
         self.aws_secret_access_key='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'
         self.total_price = 0
+        self.name = "Amazon Web Service"
         self.price = 0
         self.start_time = ''
 
@@ -76,12 +77,3 @@ class KubernetesPricingAWS(object):
             print(e)
             l.error('{}: Failed to getting  AWS client for Kubernetes.'.format(e))
             return False
-
-if __name__=="__main__":
-    awsPricing = KubernetesPricingAWS()
-    awsPricing.run()
-    
-    time.sleep(20)
-
-    awsPricing.stop()
-
