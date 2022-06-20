@@ -11,6 +11,7 @@ class KubernetesPricingGoogleCloud(object):
         #self.setting = Settings()
         self.google_cloud_access_key='AIzaSyDXVIEfXktSAxvm6YZyHo0lC53esRpQqoE'
         self.google_cloud_url ="https://cloudbilling.googleapis.com/v1/services/CCD8-9BF1-090E/skus"
+        self.name = "Google Cloud"
         self.total_price = 0
         self.price = 0
         self.start_time = ''
