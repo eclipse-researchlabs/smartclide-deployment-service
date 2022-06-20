@@ -3,7 +3,7 @@ from kubernetes import client, config, dynamic
 from kubernetes.client.exceptions import ApiException
 from deployment_service.config.logging import logger as l
 from deployment_service.config.settings import Settings
-from deployment_service.gateways.input.pricing.aws import KubernetesPricingAWS
+from deployment_service.gateways.input.pricing.provider import KubernetesPricingProvider
 
 class KubernetesDeploymentOutputGateway(object):
     def __init__(self, url, token):
@@ -214,26 +214,30 @@ class KubernetesDeploymentOutputGateway(object):
             k8s_nodes = api.list_cluster_custom_object("metrics.k8s.io", "v1beta1", "pods")
             for stats in k8s_nodes['items']:
                 if name in stats['metadata']['namespace']:
-                    # Price claculation 
-                    # AWS price
-                    awsPricing = KubernetesPricingAWS()
-                    price = awsPricing.get_price()
+                    pricing_provider = KubernetesPricingProvider()
+                    prices = pricing_provider.get_prices()
                     date_format_str = '%Y-%m-%dT%H:%M:%SZ'
                     datetime.strptime(stats['metadata']['creationTimestamp'], date_format_str)
                     start = datetime.strptime(stats['metadata']['creationTimestamp'], date_format_str)
                     diff = datetime.now() - start
                     diff_h = diff.total_seconds() / 3600
-                    total_price = price * diff_h
-                    return {
-                        'containers': stats['containers'], 
-                        'price': {
-                            'current_provider': {
-                                'name': 'aws',
-                                'price': total_price
-                            }, 
-                            'competitor_providers': []
-                        }
-                    }
+                    output = {'containers': stats['containers'],"price":{"current_provider":"","competitor_provider":[]}}
+
+                    for price in prices:
+
+                        if price.current:
+                            output["price"]['current_provider'] ={
+                                                                'name': price.name,
+                                                                'price': price.cost * diff_h,
+                                                                "cost_type": price.cost_type
+                                                                }
+                        else:
+                            output["price"]['competitor_provider'].append({
+                                                                'name': price.name,
+                                                                'price': price.cost * diff_h,
+                                                                "cost_type": price.cost_type
+                                                                })
+                    return output
 
         except Exception as m_ex:
             import pdb; pdb.set_trace()
