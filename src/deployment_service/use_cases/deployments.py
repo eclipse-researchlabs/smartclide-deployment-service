@@ -10,12 +10,15 @@ def get_deployments_list(gateway):
 def create_or_update_deployment(k8s_url, k8s_token, name, username, port, replicas, hostname):   
     k_gw = KubernetesDeploymentOutputGateway(k8s_url, k8s_token) 
     deployment_result = k_gw.run(
-            name=name, 
+            name=name.replace('_', '-'), 
             image=f'{username}/{name}', 
             replicas=int(replicas),
             host=hostname, 
             port=int(port)
         )
+    if hasattr(deployment_result, 'body'):
+        return deployment_result
+
     if deployment_result:
         repo = MongoDeploymentRepository()
         id = str(uuid.uuid4())
@@ -33,7 +36,6 @@ def create_or_update_deployment(k8s_url, k8s_token, name, username, port, replic
                 'stopped_at': ''
             }
         )
-
         if deployment:
             mom_gw = MOMAMQPOutputGateway()
             ret = mom_gw.send_deployment_is_running(name, id)

@@ -1,7 +1,9 @@
+from datetime import datetime
 from kubernetes import client, config, dynamic
 from kubernetes.client.exceptions import ApiException
 from deployment_service.config.logging import logger as l
 from deployment_service.config.settings import Settings
+from deployment_service.gateways.input.pricing.aws import KubernetesPricingAWS
 
 class KubernetesDeploymentOutputGateway(object):
     def __init__(self, url, token):
@@ -20,22 +22,23 @@ class KubernetesDeploymentOutputGateway(object):
         
     def run(self, name, image, port, replicas, host):
         try:
-            self.create_namespace(name)
+            self.create_namespace(name.replace('_', '-'))
             deployment = self.create_deployment(name, image, port, replicas)
             self.create_service(name, port)
-            self.create_ingress(name, host, port)
+            # self.create_ingress(name, host, port)
             return deployment
+
         except Exception as d_ex:
             import traceback; traceback.print_exc()
             l.error('{}: Failed to deploy.'.format(d_ex))
-            return False
-
+            return d_ex
+        
 
     def stop(self, name):
         try:
             self.delete_deployment(name)
             self.delete_service(name)
-            self.delete_ingress(name)
+            # self.delete_ingress(name)
             return True
 
         except Exception as d_ex:
@@ -70,7 +73,7 @@ class KubernetesDeploymentOutputGateway(object):
             spec=spec)
 
         deployment = self.apps_v1_api.create_namespaced_deployment(
-            namespace=name, 
+            namespace=name.replace('_', '-'), 
             body=deployment
         )
         return deployment
@@ -84,12 +87,15 @@ class KubernetesDeploymentOutputGateway(object):
             metadata=client.V1ObjectMeta(
                 name=name
             ),
+
             spec=client.V1ServiceSpec(
                 selector={"app": name},
                 ports=[client.V1ServicePort(
-                    port=port,
+                    node_port=30001, 
+                    port=30001,
                     target_port=port
-                )]
+                )], 
+                type='NodePort'
             )
         )
         core_v1_api.create_namespaced_service(namespace=name, body=body)
@@ -127,17 +133,20 @@ class KubernetesDeploymentOutputGateway(object):
         return True
 
     def create_namespace(self, name):
-        client = dynamic.DynamicClient(self.aApiClient)
-        namespace_api = client.resources.get(api_version="v1", kind="Namespace")
-        namespace_manifest = {
-            "apiVersion": "v1",
-            "kind": "Namespace",
-            "metadata": {
-                "name": name, 
-                "resourceversion": "v1"
-            },
-        }
-        namespace_api.create(body=namespace_manifest)
+        try:
+            client = dynamic.DynamicClient(self.aApiClient)
+            namespace_api = client.resources.get(api_version="v1", kind="Namespace")
+            namespace_manifest = {
+                "apiVersion": "v1",
+                "kind": "Namespace",
+                "metadata": {
+                    "name": name, 
+                    "resourceversion": "v1"
+                },
+            }
+            namespace_api.create(body=namespace_manifest)
+        except:
+            pass
 
     def delete_deployment(self, name):
         client = dynamic.DynamicClient(self.aApiClient)
@@ -199,9 +208,32 @@ class KubernetesDeploymentOutputGateway(object):
             l.debug("Exception when calling AppsV1Api->list_deployment_for_all_namespaces: %s\n" % e)
 
     def get_deployment_metrics(self, name):
-        config.load_kube_config()
-        api = client.CustomObjectsApi()
-        k8s_nodes = api.list_cluster_custom_object("metrics.k8s.io", "v1beta1", "pods")
-        for stats in k8s_nodes['items']:
-            if name in stats['metadata']['namespace']:
-                return stats['containers']
+        try:
+            config.load_kube_config()
+            api = client.CustomObjectsApi()
+            k8s_nodes = api.list_cluster_custom_object("metrics.k8s.io", "v1beta1", "pods")
+            for stats in k8s_nodes['items']:
+                if name in stats['metadata']['namespace']:
+                    # Price claculation 
+                    # AWS price
+                    awsPricing = KubernetesPricingAWS()
+                    price = awsPricing.get_price()
+                    date_format_str = '%Y-%m-%dT%H:%M:%SZ'
+                    datetime.strptime(stats['metadata']['creationTimestamp'], date_format_str)
+                    start = datetime.strptime(stats['metadata']['creationTimestamp'], date_format_str)
+                    diff = datetime.now() - start
+                    diff_h = diff.total_seconds() / 3600
+                    total_price = price * diff_h
+                    return {
+                        'containers': stats['containers'], 
+                        'price': {
+                            'current_provider': {
+                                'name': 'aws',
+                                'price': total_price
+                            }, 
+                            'competitor_providers': []
+                        }
+                    }
+
+        except Exception as m_ex:
+            import pdb; pdb.set_trace()
