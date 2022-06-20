@@ -207,14 +207,14 @@ class KubernetesDeploymentOutputGateway(object):
         except ApiException as e:
             l.debug("Exception when calling AppsV1Api->list_deployment_for_all_namespaces: %s\n" % e)
 
-    def get_deployment_metrics(self, name):
+    def get_deployment_metrics(self, name, url):
         try:
             config.load_kube_config()
             api = client.CustomObjectsApi()
             k8s_nodes = api.list_cluster_custom_object("metrics.k8s.io", "v1beta1", "pods")
             for stats in k8s_nodes['items']:
                 if name in stats['metadata']['namespace']:
-                    pricing_provider = KubernetesPricingProvider()
+                    pricing_provider = KubernetesPricingProvider(url)
                     prices = pricing_provider.get_prices()
                     date_format_str = '%Y-%m-%dT%H:%M:%SZ'
                     datetime.strptime(stats['metadata']['creationTimestamp'], date_format_str)
@@ -225,19 +225,20 @@ class KubernetesDeploymentOutputGateway(object):
 
                     for price in prices:
 
-                        if price.current:
+                        if price['current']:
                             output["price"]['current_provider'] ={
-                                                                'name': price.name,
-                                                                'price': price.cost * diff_h,
-                                                                "cost_type": price.cost_type
+                                                                'name': price['name'],
+                                                                'price': price['cost'] * diff_h,
+                                                                "cost_type": price['cost_type']
                                                                 }
                         else:
                             output["price"]['competitor_provider'].append({
-                                                                'name': price.name,
-                                                                'price': price.cost * diff_h,
-                                                                "cost_type": price.cost_type
+                                                                'name': price['name'],
+                                                                'price': price['cost'] * diff_h,
+                                                                "cost_type": price['cost_type']
                                                                 })
                     return output
 
         except Exception as m_ex:
+            import traceback;traceback.print_exc()
             import pdb; pdb.set_trace()

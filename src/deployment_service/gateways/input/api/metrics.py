@@ -14,7 +14,7 @@ async def metrics(id: str, k8s_token: str = Header(None)):
     try:
         deployment = mongo_repo.show_deployment(id)
         k_gw = KubernetesDeploymentOutputGateway(deployment['k8s_url'], k8s_token)
-        container_metrics = k_gw.get_deployment_metrics(deployment['project'])
+        container_metrics = k_gw.get_deployment_metrics(deployment['project'], deployment['k8s_url'])
         if container_metrics:
             return JSONResponse(content=container_metrics, status_code=200)
         else:
