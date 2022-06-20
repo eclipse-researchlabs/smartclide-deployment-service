@@ -1,0 +1,16 @@
+{
+    "C":"gcc",
+    "C++":"gcc",
+    "C#":"gcc",
+    "PHP":"php",
+    "Java":"openjdk",
+    "Python":"python",
+    "SQL":"crate",
+    "Ruby":"ruby",
+    "Visual Basic .NET" :"bitnami/aspnet-core",
+    "TypeScript":"node",
+    "Swift":"swift",
+    "Rust":"rust",
+    "Go":"golang",
+    "Kotlin":"openjdk"
+}

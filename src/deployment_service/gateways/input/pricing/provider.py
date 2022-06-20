@@ -14,110 +14,72 @@ class KubernetesPricingProvider():
         #self.setting = Settings()
         self.kubernetes_provider= ""
         self.total_price = 0
-        self.prices = {}
+        self.prices = []
         self.provider_url = provider_url
         self.competitor_prices = {}
       
-        self.kubernetes_competitor_provider_1= ""
-        self.kubernetes_competitor_provider_1_name= ""
-        self.price_competitor_1 = 0
-        
-        self.kubernetes_competitor_provider_2= ""
-        self.kubernetes_competitor_provider_2_name= ""
-        self.price_competitor_2 = 0
+        self.awsPricing = KubernetesPricingAWS()
+        self.googlePricing = KubernetesPricingGoogleCloud()
+        self.azurePring=KubernetesPricingAzure()
 
-    def run(self):
+    def get_prices(self):
+
         try:
             self.get_kubernetes_provider()
 
-            self.kubernetes_provider.run()
+            providerArray = [self.awsPricing,self.googlePricing,self.azurePring]
 
-            self.get_competitor_prices(option="run")
+            if self.kubernetes_provider == "Local":
+                self.prices.append(
+                            {
+                            "name":"Local",
+                            "cost":0,
+                            "current":True, 
+                            "cost_type": ""
+                            }
+                    )
+
+            for provider in providerArray:
+                if provider.name == "Amazon Web Service" :
+                    self.prices.append(
+                        {
+                            "name":provider.name,
+                            "cost":provider.get_price(),
+                            "current":self.kubernetes_provider == provider.name, 
+                            "cost_type": "Per CPU"
+                        }
+                        )
+                else:
+                    self.prices.append(
+                        {
+                            "name":provider.name,
+                            "cost":provider.get_price(),
+                            "current":self.kubernetes_provider == provider.name, 
+                            "cost_type": "On Demand"
+                            }
+                        )
+            return self.prices
+
         except Exception as e:
             l.error('{}: Failed to running Kubernets Pricing Provider for Kubernetes.'.format(e))
             return False
 
-
-    def stop(self):
-        try:
-            self.total_price = self.kubernetes_provider.stop()
-
-            self.get_competitor_prices(option="stop")
-            self.prices = {"My price":self.total_price,**self.competitor_prices}
-
-            return self.prices
-        except Exception as e:
-            l.error('{}: Failed to stopping Kubernets Pricing Provider for Kubernetes.'.format(e))
-            return False
-
-    def get_competitor_prices(self,option):
-        try:
-            if option == "run":
-                if type(self.kubernetes_provider) == KubernetesPricingAzure:
-                    self.kubernetes_competitor_provider_1 = KubernetesPricingAWS()
-                    self.kubernetes_competitor_provider_1_name = "Amazon Web Service"
-                    
-                    self.kubernetes_competitor_provider_2 = KubernetesPricingGoogleCloud()
-                    self.kubernetes_competitor_provider_2_name = "Google Cloud"
-
-
-                    self.kubernetes_competitor_provider_1.run()
-                    self.kubernetes_competitor_provider_2.run()
-
-
-                if type(self.kubernetes_provider) == KubernetesPricingAWS:
-                    self.kubernetes_competitor_provider_1 = KubernetesPricingAzure()
-                    self.kubernetes_competitor_provider_1_name = "Microsoft Azure"
-
-                    self.kubernetes_competitor_provider_2 = KubernetesPricingGoogleCloud()
-                    self.kubernetes_competitor_provider_2_name = "Google Cloud"
-
-                    self.kubernetes_competitor_provider_1.run()
-                    self.kubernetes_competitor_provider_2.run()
-
-
-                if type(self.kubernetes_provider) == KubernetesPricingGoogleCloud:
-                    self.kubernetes_competitor_provider_1 = KubernetesPricingAWS()
-                    self.kubernetes_competitor_provider_1_name = "Amazon Web Service"
-
-                    self.kubernetes_competitor_provider_2 = KubernetesPricingAzure()
-                    self.kubernetes_competitor_provider_2_name = "Microsoft Azure"
-
-                    self.kubernetes_competitor_provider_1.run()
-                    self.kubernetes_competitor_provider_2.run()
-
-            if option == "stop":
-                self.price_competitor_1 = self.kubernetes_competitor_provider_1.stop()
-                self.price_competitor_2 = self.kubernetes_competitor_provider_2.stop()
-                
-                self.competitor_prices =  {self.kubernetes_competitor_provider_1_name:self.price_competitor_1,self.kubernetes_competitor_provider_2_name:self.price_competitor_2}
-
-                return {self.kubernetes_competitor_provider_1_name:self.price_competitor_1,self.kubernetes_competitor_provider_2_name:self.price_competitor_2}
-
-        except Exception as e:
-            l.error('{}: Failed to getting Kubernets Competitor Prices for Kubernetes.'.format(e))
-            return False
-
-
     def get_kubernetes_provider(self):
         try:
             if "azure" in self.provider_url or "microsoft" in self.provider_url:
-                self.kubernetes_provider = KubernetesPricingAzure()
+                self.kubernetes_provider = "Microsoft Azure"
+                return
 
             if "google" in self.provider_url:
-                self.kubernetes_provider = KubernetesPricingGoogleCloud()
+                self.kubernetes_provider = "Google Cloud"
+                return
 
             if "aws" in self.provider_url or "amazon" in self.provider_url:
-                self.kubernetes_provider = KubernetesPricingAWS()
+                self.kubernetes_provider = "Amazon Web Service"
+                return
+            else:
+                self.kubernetes_provider = "Local"
 
         except Exception as e:
             l.error('{}: Failed to getting Kubernets Pricing Provider for Kubernetes.'.format(e))
             return False
-
-if __name__ == "__main__":
-    pricingKubernets = KubernetesPricingProvider("https://container.googleapis.com")
-    pricingKubernets.run()
-
-    time.sleep(10)
-
-    pricingKubernets.stop()

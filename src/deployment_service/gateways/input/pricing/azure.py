@@ -11,6 +11,7 @@ class KubernetesPricingAzure(object):
         #self.setting = Settings()
         self.azure_url ="https://azure.microsoft.com/es-es/pricing/details/kubernetes-service/"
         self.total_price = 0
+        self.name = "Microsoft Azure"
         self.price = 0
         self.start_time = ''
 
@@ -56,14 +57,5 @@ class KubernetesPricingAzure(object):
             print(e)
             l.error('{}: Failed to getting  Azure pricing for Kubernetes.'.format(e))
             return False
-
-
-if __name__=="__main__":
-
-    azurePricing = KubernetesPricingAzure()
-    azurePricing.run()
-    time.sleep(20)
-
-    azurePricing.stop()
 
 
