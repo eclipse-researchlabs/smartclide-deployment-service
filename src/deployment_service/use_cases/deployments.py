@@ -24,7 +24,7 @@ def create_or_update_deployment(k8s_url, k8s_token, name, username, port, replic
         id = str(uuid.uuid4())
         deployment = repo.create_or_update_deployment(
             {
-                '_id': id,
+                'id': id,
                 'user': username,
                 'project': name,
                 'domain': hostname,

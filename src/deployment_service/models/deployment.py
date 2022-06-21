@@ -11,7 +11,7 @@ import uuid
 
 @dataclass
 class Deployment():
-    _id: str
+    id: str
     user: str
     project: str
     domain: str

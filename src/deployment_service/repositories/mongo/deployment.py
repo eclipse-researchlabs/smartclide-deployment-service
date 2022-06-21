@@ -7,7 +7,7 @@ class MongoDeploymentRepository(MongoRepo):
 
     def _create_deployment_obj(self, deployment: dict) -> Deployment:
         return Deployment(
-            _id=str(deployment['_id']),
+            id=str(deployment['_id']),
             user=deployment['user'],
             project=deployment['project'],
             domain=deployment['domain'],
@@ -24,7 +24,7 @@ class MongoDeploymentRepository(MongoRepo):
     def create_or_update_deployment(self, deployment: dict) -> bool:
         try:
             deployment_obj =  self._create_deployment_obj(deployment)
-            query = {'_id': deployment_obj._id} 
+            query = {'id': deployment_obj.id} 
 
             rc = self.deployments_db.update(query, deployment_obj.to_dict(), True)
             if rc:

@@ -1,4 +1,5 @@
 from datetime import datetime
+import random
 from kubernetes import client, config, dynamic
 from kubernetes.client.exceptions import ApiException
 from deployment_service.config.logging import logger as l
@@ -91,8 +92,8 @@ class KubernetesDeploymentOutputGateway(object):
             spec=client.V1ServiceSpec(
                 selector={"app": name},
                 ports=[client.V1ServicePort(
-                    node_port=30001, 
-                    port=30001,
+                    node_port=random. randint(30000,310000), 
+                    port=port,
                     target_port=port
                 )], 
                 type='NodePort'
@@ -221,22 +222,31 @@ class KubernetesDeploymentOutputGateway(object):
                     start = datetime.strptime(stats['metadata']['creationTimestamp'], date_format_str)
                     diff = datetime.now() - start
                     diff_h = diff.total_seconds() / 3600
-                    output = {'containers': stats['containers'],"price":{"current_provider":"","competitor_provider":[]}}
+                    
+                    output = {
+                        'containers': stats['containers'],
+                        "price": { 
+                            "current_provider":"",
+                            "competitor_provider":[]
+                        }
+                    }
 
                     for price in prices:
 
                         if price['current']:
-                            output["price"]['current_provider'] ={
-                                                                'name': price['name'],
-                                                                'price': price['cost'] * diff_h,
-                                                                "cost_type": price['cost_type']
-                                                                }
+                            output["price"]['current_provider'] = {
+                                'name': price['name'],
+                                'price': price['cost'] * diff_h,
+                                "cost_type": price['cost_type']
+                            }
+
                         else:
                             output["price"]['competitor_provider'].append({
-                                                                'name': price['name'],
-                                                                'price': price['cost'] * diff_h,
-                                                                "cost_type": price['cost_type']
-                                                                })
+                                'name': price['name'],
+                                'price': price['cost'] * diff_h,
+                                "cost_type": price['cost_type']
+                            })
+
                     return output
 
         except Exception as m_ex:
