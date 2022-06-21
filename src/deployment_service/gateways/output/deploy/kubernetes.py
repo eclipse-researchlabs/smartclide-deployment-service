@@ -49,36 +49,41 @@ class KubernetesDeploymentOutputGateway(object):
 
 
     def create_deployment(self, name, image, port, replicas):
-        container = client.V1Container(
-            name=name,
-            image=image,
-            image_pull_policy="Never",
-            ports=[client.V1ContainerPort(container_port=port)],
-        )
-        # Template
-        template = client.V1PodTemplateSpec(
-            metadata=client.V1ObjectMeta(labels={"app": name}),
-            spec=client.V1PodSpec(containers=[container]))
-        # Spec
-        spec = client.V1DeploymentSpec(
-            replicas=replicas,
-            selector=client.V1LabelSelector(
-                match_labels={"app": name}
-            ),
-            template=template)
-        # Deployment
-        deployment = client.V1Deployment(
-            api_version="apps/v1",
-            kind="Deployment",
-            metadata=client.V1ObjectMeta(name=name),
-            spec=spec)
+        try:
+            container = client.V1Container(
+                name=name,
+                image=image,
+                image_pull_policy="Never",
+                ports=[client.V1ContainerPort(container_port=port)],
+            )
+            # Template
+            template = client.V1PodTemplateSpec(
+                metadata=client.V1ObjectMeta(labels={"app": name}),
+                spec=client.V1PodSpec(containers=[container]))
+            # Spec
+            spec = client.V1DeploymentSpec(
+                replicas=replicas,
+                selector=client.V1LabelSelector(
+                    match_labels={"app": name}
+                ),
+                template=template)
+            # Deployment
+            deployment = client.V1Deployment(
+                api_version="apps/v1",
+                kind="Deployment",
+                metadata=client.V1ObjectMeta(name=name),
+                spec=spec)
 
-        deployment = self.apps_v1_api.create_namespaced_deployment(
-            namespace=name.replace('_', '-'), 
-            body=deployment
-        )
-        return deployment
-
+            deployment = self.apps_v1_api.create_namespaced_deployment(
+                namespace=name.replace('_', '-'), 
+                body=deployment
+            )
+            return deployment
+        except:
+            resp = self.apps_v1_api.patch_namespaced_deployment(
+                name=name, namespace=name.replace('_', '-'), body=deployment
+            )
+            return resp
 
     def create_service(self, name, port):
         core_v1_api = client.CoreV1Api()
