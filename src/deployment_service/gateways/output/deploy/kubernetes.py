@@ -92,7 +92,7 @@ class KubernetesDeploymentOutputGateway(object):
             spec=client.V1ServiceSpec(
                 selector={"app": name},
                 ports=[client.V1ServicePort(
-                    node_port=random. randint(30000,310000), 
+                    node_port=random. randint(30000,32767), 
                     port=port,
                     target_port=port
                 )], 
