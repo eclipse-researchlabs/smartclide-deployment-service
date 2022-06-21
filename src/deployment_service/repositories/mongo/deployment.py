@@ -7,7 +7,7 @@ class MongoDeploymentRepository(MongoRepo):
 
     def _create_deployment_obj(self, deployment: dict) -> Deployment:
         return Deployment(
-            id=str(deployment['_id']),
+            id=str(deployment['id']),
             user=deployment['user'],
             project=deployment['project'],
             domain=deployment['domain'],
