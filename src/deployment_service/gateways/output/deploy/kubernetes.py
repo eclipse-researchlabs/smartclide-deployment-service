@@ -15,7 +15,7 @@ class KubernetesDeploymentOutputGateway(object):
         aConfiguration.verify_ssl = False
         aConfiguration.api_key = {"authorization": "Bearer " + aToken}
 
-        config.load_config()
+        # config.load_config()
         self.aApiClient = client.ApiClient(aConfiguration)
         self.apps_v1_api = client.AppsV1Api(self.aApiClient)
         self.networking_v1_api = client.NetworkingV1Api()
@@ -217,7 +217,7 @@ class KubernetesDeploymentOutputGateway(object):
 
     def get_deployment_metrics(self, name, url):
         try:
-            config.load_kube_config()
+            # config.load_kube_config()
             api = client.CustomObjectsApi()
             k8s_nodes = api.list_cluster_custom_object("metrics.k8s.io", "v1beta1", "pods")
             for stats in k8s_nodes['items']:
