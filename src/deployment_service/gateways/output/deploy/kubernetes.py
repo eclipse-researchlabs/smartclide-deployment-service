@@ -79,11 +79,11 @@ class KubernetesDeploymentOutputGateway(object):
             namespace=name.replace('_', '-'), 
             body=deployment
         )
-        if hasattr(deployment, 'code'):
-            resp = self.apps_v1_api.patch_namespaced_deployment(
-                name=name, namespace=name.replace('_', '-'), body=deployment
-            )
-            return resp    
+        # if hasattr(deployment, 'code'):
+        #     resp = self.apps_v1_api.patch_namespaced_deployment(
+        #         name=name, namespace=name.replace('_', '-'), body=deployment
+        #     )
+        #     return resp    
 
         return deployment
 
