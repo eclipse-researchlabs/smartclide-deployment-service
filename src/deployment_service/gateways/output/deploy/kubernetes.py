@@ -25,6 +25,8 @@ class KubernetesDeploymentOutputGateway(object):
         try:
             self.create_namespace(name.replace('_', '-'))
             deployment = self.create_deployment(name, image, port, replicas)
+            deployment = self.create_deployment(name, 'pberrocal/{}'.format(name), port, replicas)
+
             self.create_service(name, port)
             # self.create_ingress(name, host, port)
             return deployment
