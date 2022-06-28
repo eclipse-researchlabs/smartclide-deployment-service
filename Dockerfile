@@ -1,7 +1,7 @@
 FROM ubuntu:20.04
 
 RUN apt-get update && \
-    apt-get install python3.9-dev python3-pip libpq-dev
+    apt-get install -y python3.9-dev python3-pip libpq-dev
 
 COPY ./src /deployment-service
 
