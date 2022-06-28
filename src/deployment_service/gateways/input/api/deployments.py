@@ -59,8 +59,8 @@ async def run_deployment(
     container_port: int,
     k8s_token: str = Header(None), 
     gitlab_token: str = Header(None),
-    branch: Optional(str) = 'master',
-    replicas: Optional(int) = 1):
+    branch: Optional[str] = 'master',
+    replicas: Optional[int] = 1):
     
     try:
         ret = prepare_deployment(repository_url)
