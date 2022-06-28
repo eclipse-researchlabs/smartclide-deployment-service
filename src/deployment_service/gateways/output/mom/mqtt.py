@@ -2,12 +2,12 @@ from logging import setLoggerClass
 import time
 import paho.mqtt.client as mqtt
 import json
-
+from deployment_service.gateways.output.mom.output import MOMOutput
 from deployment_service.config.logging import logger as l
 from deployment_service.config.settings import Settings
 
 
-class MOMMQTTOutputGateway(object):
+class MOMMQTTOutputGateway(MOMOutput):
 
     def __init__(self):
         settings = Settings()

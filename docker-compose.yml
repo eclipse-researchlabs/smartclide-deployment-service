@@ -1,52 +1,26 @@
 version: '3'
-
 services:
-  deployment_service:
-    build: .
-    container_name: deployment_component
+  deployment-service:
+    image: ghcr.io/eclipse-researchlabs/smartclide-deployment-service:develop
+    container_name: deployment_component-service
     hostname: deployment_component
     ports:
-      - 3000:3000
-    volumes:
-      - ./kube_config:/etc/kubernetes/admin.conf
-    
+      - 3000:3000   
     environment:
-      - KUBE_BEARER=${KUBE_BEARER}
-      - KUBE_URL=${KUBE_URL}
-      - GITLAB_URL=${GITLAB_URL}
+      - GITLAB_URL=https://gitlab.dev.smartclide.eu/
+      - MOM_HOST=rabbitmq
+      - MOM_PORT=3332
+    links:
+      - rabbitmq:rabbitmq
+      - mongo:mongo
 
-      # database:
-  #   image: "postgres" 
-  #   env_file:
-  #     - database.env 
-  #   volumes:
-  #     - database-data:/var/lib/postgresql/data/ 
-  #   ports:
-  #     - 5432:5432
+  rabbitmq:
+    image: "rabbitmq:latest"
 
-  # registry:
-  #   image: registry:2
-  #   container_name: docker_registry
-  #   ports:
-  #   - "5000:5000"
-  #   environment:
-  #     REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /data
-  #   volumes:
-  #      - ./data/registry:/data
-  #   restart: always
-  # jenkins:
-  #   image: jenkins/jenkins:lts
-  #   privileged: true
-  #   user: root
-  #   ports:
-  #     - 8081:8080
-  #     - 50000:50000
-  #   container_name: jenkins
-  #   volumes:
-  #     - ./data/jenkins:/var/jenkins_home
-  #     - /home/pberrocal/dev/:/var/jenkins_home/workspace/
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #     - /usr/local/bin/docker:/usr/local/bin/docker
+  mongo:
+    image: mongo:latest
+    volumes:
+      - ./data:/data/db
 
 volumes:
   database-data: 

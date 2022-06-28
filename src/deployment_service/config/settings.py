@@ -1,11 +1,13 @@
 import os
+from decouple import config
+
 class Settings():
 
     def __init__(self):
         self.repositories = {
-            'postgres': {
-                'host': 'localhost', 
-                'port': 2000, 
+            'mongo': {
+                'host': 'mongo', 
+                'port': 27017, 
                 'password': ''
             }
         }
@@ -16,20 +18,16 @@ class Settings():
         } 
 
         self.gitlab = {
-            'url': os.environ['GITLAB_URL'],
+            'url': os.environ.get('GITLAB_URL',config('GITLAB_URL')),
             'docker_url': 'tcp://docker:2375'
         }
 
-        self.kubernetes = {
-            'kube_host': os.environ['KUBE_URL'],
-            'kube_bearer': os.environ['KUBE_BEARER']
-
-        }
-
         self.mom = {
-            'mom_host': os.environ['MOM_HOST'],
-            'mom_port': os.environ['MOM_PORT']
+            'mom_host': os.environ.get('MOM_HOST',config('MOM_HOST')),
+            'mom_port': os.environ.get('MOM_PORT',config('MOM_PORT'))
         }
+
+        self.repo_dir = '/tmp/repos/'
 
     def get_job_config(self, job_name, cvs_url, pipeline):
         # return """<?xml version='1.1' encoding='UTF-8'?>
@@ -43,7 +41,7 @@ class Settings():
         return '''
             <flow-definition plugin="workflow-job@2.41">
             <description> holaaa </description>
-            <keepDependencies>false</keepDependencies>
+            <keepDependencies>falsec</keepDependencies>
             <properties>
             <com.coravy.hudson.plugins.github.GithubProjectProperty plugin="github@1.34.1">
             <projectUrl> https://github.com/pedbermar/wellness_challenge </projectUrl>

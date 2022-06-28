@@ -37,8 +37,8 @@ class BuildRepository(MongoRepo):
 
     def save(self, build):
         try:
-            result = self.db.builds.insert_one(build)
-            return True
+            result = self.db.deployments.insert_one(build)
+            return result
         except:
             import pdb
             pdb.set_trace()

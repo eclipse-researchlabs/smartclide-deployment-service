@@ -1,13 +1,12 @@
 FROM ubuntu:20.04
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y python3.6 \
-    python3.9-dev python3-pip libpq-dev
+RUN apt-get update && \
+    apt-get install -y python3-pip git 
 
-COPY . /deployment_component
-WORKDIR "/deployment_component/src"
+COPY ./src /deployment-service
+
+WORKDIR "/deployment-service/"
 
 RUN pip install -r requirements.txt
-
-ENV KUBECONFIG=/etc/kubernetes/admin.conf
 
 CMD exec /bin/bash -c "python3 deployment-service_api.py"

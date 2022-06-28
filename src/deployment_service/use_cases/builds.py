@@ -13,3 +13,4 @@ def build_project(repo, gateway, branch, ci_file):
 def build_list(gateway):
     build_list = gateway.get_builds_list()
     return build_list
+    

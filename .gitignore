@@ -1,3 +1,4 @@
+geckodriver
 database.env
 data/
 # Byte-compiled / optimized / DLL files
@@ -82,8 +83,8 @@ celerybeat-schedule
 *.sage.py
 
 # dotenv
-.env
-
+# .env
+.pytest_cache
 # virtualenv
 .venv
 venv/
