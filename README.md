@@ -17,7 +17,7 @@ kubectl -n kube-system describe secret $(sudo kubectl -n kube-system get secret 
 ```
 
 
-## Instructions for local deployment
+## HOW TO DEPLOY
 ### Clone this repository and run 
 ``` bash 
 docker-compose up -d 
