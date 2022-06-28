@@ -49,22 +49,23 @@ async def read_deployment(id: str, k8s_token: str = Header(None)):
         return JSONResponse(content={'message': f'Internal server error: {ex}'}, status_code=500)
 
 
+    
 @router.post('/deployments/')
 async def run_deployment(
-    user: str,
-    git_repo_url: str,
-    project_name: str,
-    k8s_url: str,
-    container_port: int,
-    k8s_token: str = Header(None), 
-    gitlab_token: str = Header(None),
-    branch: Optional[str] = 'master',
-    replicas: Optional[int] = 1):
+    username: str = Query(None, description='Smartclide (and Gitlab) username'),
+    repository_url: str = Query(None, description='Git repository URL'),
+    repository_name: str = Query(None, description='Git repository name'),
+    k8s_url: str = Query(None, description='Kubernetes instance API URL'),
+    container_port: int = Query(None, description='Port to access de main application container'),
+    k8s_token: str = Query(Header(str), description='Kubernetes instance API token'), 
+    gitlab_token: str = Query(Header(str), description='SmartCLIDE Gitlab instance user token'),
+    branch: Optional[str] = Query(None, description='Git branch'),
+    replicas: Optional[int] = Query(None, description='Number of container replicas')):
     
     try:
-        ret = prepare_deployment(git_repo_url)
+        ret = prepare_deployment(repository_url)
         if ret:
-            result = create_or_update_deployment(k8s_url, k8s_token, project_name, user, container_port, replicas)
+            result = create_or_update_deployment(k8s_url, k8s_token, repository_name, username, container_port, replicas)
         else: 
             return JSONResponse(content ={'message': 'Can not deploy'}, status_code = 404 ) 
         if result:
