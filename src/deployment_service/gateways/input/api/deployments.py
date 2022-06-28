@@ -6,7 +6,7 @@ import json
 from fastapi.responses import JSONResponse
 from deployment_service.gateways.output.deploy.kubernetes import KubernetesDeploymentOutputGateway
 from deployment_service.repositories.mongo.deployment import MongoDeploymentRepository
-from deployment_service.use_cases.deployments import create_or_update_deployment, get_deployments_list
+from deployment_service.use_cases.deployments import create_or_update_deployment, get_deployments_list, prepare_deployment
 from deployment_service.models.deployment import Deployment
 from deployment_service.repositories.postgres.postgre_repo import PostgresRepo
 from deployment_service.config.settings import Settings
@@ -55,15 +55,18 @@ async def run_deployment(
     git_repo_url: str,
     project_name: str,
     k8s_url: str,
-    hostname: str,
+    container_port: int,
     k8s_token: str = Header(None), 
     gitlab_token: str = Header(None),
     branch: Optional[str] = 'master',
-    replicas: Optional[int] = 1,
-    deployment_port: int = 80):
+    replicas: Optional[int] = 1):
     
     try:
-        result = create_or_update_deployment(k8s_url, k8s_token, project_name, user, deployment_port, replicas, hostname)
+        ret = prepare_deployment(git_repo_url)
+        if ret:
+            result = create_or_update_deployment(k8s_url, k8s_token, project_name, user, container_port, replicas)
+        else: 
+            return JSONResponse(content ={'message': 'Can not deploy'}, status_code = 404 ) 
         if result:
             if hasattr(result, 'body'):
                 return JSONResponse(content={'message': json.loads(result.body)['message']}, status_code=result.status)

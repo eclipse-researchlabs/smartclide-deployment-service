@@ -1,19 +1,16 @@
 version: '3'
 
 services:
-  #deployment_service:
-  #  build: .
-  #  container_name: deployment_component
-  #  hostname: deployment_component
-  #  ports:
-  #    - 3000:3000
-  #  volumes:
-  #    - ./kube_config:/etc/kubernetes/admin.conf
-  #  
-  #  environment:
-  #    - GITLAB_URL=${GITLAB_URL}
-  #    - MOM_HOST=${MOM_HOST}
-  #    - MOM_PORT=${MOM_PORT}
+  deployment_service:
+   build: .
+   container_name: deployment_component
+   hostname: deployment_component
+   ports:
+     - 3000:3000   
+   environment:
+     - GITLAB_URL=${GITLAB_URL}
+     - MOM_HOST=${MOM_HOST}
+     - MOM_PORT=${MOM_PORT}
 
   rabbitmq:
     image: "rabbitmq:latest"
@@ -24,45 +21,15 @@ services:
       - "25672:25672" 
       - "5672:5672" 
       - "15671:15671"
-      # database:
-  #   image: "postgres" 
-  #   env_file:
-  #     - database.env 
-  #   volumes:
-  #     - database-data:/var/lib/postgresql/data/ 
-  #   ports:
-  #     - 5432:5432
 
-  # registry:
-  #   image: registry:2
-  #   container_name: docker_registry
-  #   ports:
-  #   - "5000:5000"
-  #   environment:
-  #     REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /data
-  #   volumes:
-  #      - ./data/registry:/data
-  #   restart: always
-  # jenkins:
-  #   image: jenkins/jenkins:lts
-  #   privileged: true
-  #   user: root
-  #   ports:
-  #     - 8081:8080
-  #     - 50000:50000
-  #   container_name: jenkins
-  #   volumes:
-  #     - ./data/jenkins:/var/jenkins_home
-  #     - /home/pberrocal/dev/:/var/jenkins_home/workspace/
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #     - /usr/local/bin/docker:/usr/local/bin/docker
   mongo:
-        image: mongo:latest
-        hostname: mongo
-        container_name: mongo
-        volumes:
-            - ./data:/data/db
-        ports:
-            - 27017:27017
+    image: mongo:latest
+    hostname: mongo
+    container_name: mongo
+    volumes:
+      - ./data:/data/db
+    ports:
+      - 27017:27017
+
 volumes:
   database-data: 

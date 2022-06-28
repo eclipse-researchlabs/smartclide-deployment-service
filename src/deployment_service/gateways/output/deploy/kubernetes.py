@@ -1,34 +1,33 @@
 from datetime import datetime
-import random
-from kubernetes import client, config, dynamic
+import yaml
+from kubernetes import client, dynamic
 from kubernetes.client.exceptions import ApiException
 from deployment_service.config.logging import logger as l
 from deployment_service.config.settings import Settings
 from deployment_service.gateways.input.pricing.provider import KubernetesPricingProvider
 
 class KubernetesDeploymentOutputGateway(object):
-    def __init__(self, url, token):
+    def __init__(self, url, token, gitlab_ci_path):
         self.settings = Settings()
+        self.glci_path = gitlab_ci_path
         aToken = token
-        aConfiguration = client.Configuration()
-        aConfiguration.host = url
-        aConfiguration.verify_ssl = False
-        aConfiguration.api_key = {"authorization": "Bearer " + aToken}
+        self.aConfiguration = client.Configuration()
+        self.aConfiguration.host = url
+        self.aConfiguration.verify_ssl = False
+        self.aConfiguration.api_key = {"authorization": "Bearer " + aToken}
 
         # config.load_config()
-        self.aApiClient = client.ApiClient(aConfiguration)
+        self.aApiClient = client.ApiClient(self.aConfiguration)
         self.apps_v1_api = client.AppsV1Api(self.aApiClient)
         self.networking_v1_api = client.NetworkingV1Api()
 
         
-    def run(self, name, image, port, replicas, host):
+    def run(self, name, image, port, replicas):
         try:
             self.create_namespace(name.replace('_', '-'))
+            self.create_docker_registry_secret(name.replace('_', '-'))
             deployment = self.create_deployment(name, image, port, replicas)
-            deployment = self.create_deployment(name, 'pberrocal/{}'.format(name), port, replicas)
-
-            self.create_service(name, port)
-            # self.create_ingress(name, host, port)
+            self.create_service(name.replace('_', '-'), port)
             return deployment
 
         except Exception as d_ex:
@@ -41,7 +40,6 @@ class KubernetesDeploymentOutputGateway(object):
         try:
             self.delete_deployment(name)
             self.delete_service(name)
-            # self.delete_ingress(name)
             return True
 
         except Exception as d_ex:
@@ -50,94 +48,86 @@ class KubernetesDeploymentOutputGateway(object):
             return False
 
 
+    def _get_container_obj(self, image, name, port = None):
+        return client.V1Container(
+                name=name,
+                image=image,
+                ports=[client.V1ContainerPort(container_port=port)] if port else [],
+            )
+
+    def _get_deployment_support_containers(self):
+        with open(self.glci_path, "r") as stream:
+            try:
+                f_content = yaml.safe_load(stream)
+                services = list(filter(lambda x: 'name' in x, f_content['services']))
+                return list(map(lambda s: self._get_container_obj(s['name'], s['name'].split(':')[0]), services))
+
+            except yaml.YAMLError as ex:
+                l.error('Failed to parse .gitlab-ci.yaml file {}'.format(ex))
+                import traceback; traceback.print_exc()
+
     def create_deployment(self, name, image, port, replicas):
-        container = client.V1Container(
-            name=name,
-            image=image,
-            image_pull_policy="Never",
-            ports=[client.V1ContainerPort(container_port=port)],
-        )
-        # Template
-        template = client.V1PodTemplateSpec(
-            metadata=client.V1ObjectMeta(labels={"app": name}),
-            spec=client.V1PodSpec(containers=[container]))
-        # Spec
-        spec = client.V1DeploymentSpec(
-            replicas=replicas,
-            selector=client.V1LabelSelector(
-                match_labels={"app": name}
-            ),
-            template=template)
-        # Deployment
-        deployment = client.V1Deployment(
-            api_version="apps/v1",
-            kind="Deployment",
-            metadata=client.V1ObjectMeta(name=name),
-            spec=spec)
+        try:
+            image__ = 'registry.dev.smartclide.eu/{}'.format(image)
+            name = name.replace('_', '-')
 
-        deployment = self.apps_v1_api.create_namespaced_deployment(
-            namespace=name.replace('_', '-'), 
-            body=deployment
-        )
-        # if hasattr(deployment, 'code'):
-        #     resp = self.apps_v1_api.patch_namespaced_deployment(
-        #         name=name, namespace=name.replace('_', '-'), body=deployment
-        #     )
-        #     return resp    
+            # Container
+            main_container = self._get_container_obj(image__, name, port)
+            support_containers = self._get_deployment_support_containers()
+            containers = [main_container] + support_containers
 
-        return deployment
+            # Template
+            template = client.V1PodTemplateSpec(
+                metadata=client.V1ObjectMeta(labels={"app": name}),
+                spec=client.V1PodSpec(containers=containers, image_pull_secrets=[{'name': 'smartclidedockerregcred'}]),
+            )
+
+            # Spec
+            spec = client.V1DeploymentSpec(
+                replicas=replicas,
+                selector=client.V1LabelSelector(
+                    match_labels={"app": name}
+                ),
+                template=template
+            )
+
+            # Deployment
+            deployment = client.V1Deployment(
+                api_version="apps/v1",
+                kind="Deployment",
+                metadata=client.V1ObjectMeta(name=name),
+                spec=spec
+            )
+
+            deployment = self.apps_v1_api.create_namespaced_deployment(
+                namespace=name.replace('_', '-'), 
+                body=deployment
+            )
+            return deployment
+        except Exception as d_ex:
+            l.error('Failed to crete deployment: {}'.format(d_ex))
+            import traceback; traceback.print_exc()
 
     def create_service(self, name, port):
-        core_v1_api = client.CoreV1Api()
+        api_client = client.api_client.ApiClient(self.aConfiguration)
+        core_v1_api = client.CoreV1Api(api_client)
         body = client.V1Service(
             api_version="v1",
             kind="Service",
             metadata=client.V1ObjectMeta(
                 name=name
             ),
-
             spec=client.V1ServiceSpec(
                 selector={"app": name},
                 ports=[client.V1ServicePort(
-                    node_port=random. randint(30000,32767), 
                     port=port,
                     target_port=port
                 )], 
-                type='NodePort'
+                # https://faun.pub/application-deployment-on-azure-kubernetes-service-aks-exposing-a-service-and-deploying-523ebae407bc
+                type='LoadBalancer'
             )
         )
-        core_v1_api.create_namespaced_service(namespace=name, body=body)
-        return True
-
-    def create_ingress(self, name, host, port):
-        body = client.V1Ingress(
-            api_version="networking.k8s.io/v1",
-            kind="Ingress",
-            metadata=client.V1ObjectMeta(name=name, annotations={
-                "nginx.ingress.kubernetes.io/rewrite-target": "/"
-            }),
-            spec=client.V1IngressSpec(
-                rules=[client.V1IngressRule(
-                    host=host,
-                    http=client.V1HTTPIngressRuleValue(
-                        paths=[client.V1HTTPIngressPath(
-                            path="/",
-                            path_type="Exact",
-                            backend=client.V1IngressBackend(
-                                service=client.V1IngressServiceBackend(
-                                    port=client.V1ServiceBackendPort(
-                                        number=port,
-                                    ),
-                                    name=name)
-                                )
-                        )]
-                    )
-                )
-                ]
-            )
-        )
-
-        self.networking_v1_api.create_namespaced_ingress(namespace=name, body=body)
+        core_v1_api.create_namespaced_service(namespace=name.replace('_', '-'), body=body)
         return True
 
     def create_namespace(self, name):
@@ -213,7 +203,8 @@ class KubernetesDeploymentOutputGateway(object):
             l.debug(api_response)
         
         except ApiException as e:
-            l.debug("Exception when calling AppsV1Api->list_deployment_for_all_namespaces: %s\n" % e)
+            l.error("Exception when calling AppsV1Api->list_deployment_for_all_namespaces: %s\n" % e)
+            import traceback; traceback.print_exc()
 
     def get_deployment_metrics(self, name, url):
         try:
@@ -257,5 +248,27 @@ class KubernetesDeploymentOutputGateway(object):
                     return output
 
         except Exception as m_ex:
+            l.error('Failed to obtain deployment metrics: {}'.format(m_ex))
             import traceback;traceback.print_exc()
-            import pdb; pdb.set_trace()
+
+    def create_docker_registry_secret(self, namespace):
+        # https://juju.is/tutorials/using-gitlab-as-a-container-registry#7-pull-your-container
+        # https://github.com/kubernetes-client/python/blob/1ad6e80f29369651e17a6ba767ddccc99f46600b/kubernetes/docs/V1PodSpec.md
+        # https://kubernetes.io/docs/concepts/configuration/secret/#secret-types
+        # https://stackoverflow.com/questions/46763148/how-to-create-secrets-using-kubernetes-python-client
+        # kubectl create -n mynamespace secret docker-registry dockerhubpull --dry-run=true --docker-username=myuser --docker-server=docker.io --docker-email=myemail@domain.com   --docker-password=mypass  -o yaml
+        try:
+            api_client = client.api_client.ApiClient(self.aConfiguration)
+            v1 = client.CoreV1Api(api_client)
+            data = {'.dockerconfigjson': 'eyJhdXRocyI6eyJyZWdpc3RyeS5kZXYuc21hcnRjbGlkZS5ldSI6eyJ1c2VybmFtZSI6InBiZXJyb2NhbCIsInBhc3N3b3JkIjoib0VGQjgybXR6d3c1UzctSkEybjkiLCJlbWFpbCI6InBiZXJyb2NhbEB3ZWxsbmVzc3RnLmNvbSIsImF1dGgiOiJjR0psY25KdlkyRnNPbTlGUmtJNE1tMTBlbmQzTlZNM0xVcEJNbTQ1In19fQ=='}
+            metadata = {'name': 'smartclidedockerregcred', 'namespace': namespace}
+            body = client.V1Secret('v1', data , None, 'Secret', metadata, type='kubernetes.io/dockerconfigjson')
+            # import pdb; pdb.set_trace()
+            ret = v1.create_namespaced_secret(namespace, body)
+            return ret
+
+        except Exception as ex:
+            if '409' in str(ex): pass
+            else:
+                l.error('Failed to create docker registry secret: {}'.format(ex))
+                import traceback; traceback.print_exc()

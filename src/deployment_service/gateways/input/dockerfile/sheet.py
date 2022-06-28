@@ -1,71 +1,62 @@
 import json
-from urllib import response
-from pydantic import Json
 import requests
+from deployment_service.config.logging import logger as l
 
 class DockerfileSheet():
 
     def __init__(self,repo_url):
         self.repo_url = repo_url
-        self.first_language = ""
+        self.language = self.get_repo_lenguaje()
         self.image = ""
-        self.dockerfile_sheet =  ""
         
         
     def get_repo_lenguaje(self):
-
-        self.repo_url
-
         repo_name = self.repo_url.split(".com")[1]+"/languages"
-
-        url = 'https://api.github.com/repos'+repo_name
-
+        url = 'https://api.github.com/repos/{}'.format(repo_name)
         response = requests.get(url)
-
         lenguajes = json.loads(response.text)
+        language = list(lenguajes.keys())[0]
+        return language
 
-        self.first_language = list(lenguajes.keys())[0]
+    def run(self, cloned_repo_path):
+        try:
+            self.get_repo_lenguaje()
+            d_content = self.generate_dockerfile()
+            f_path = '{}/Dockerfile'.fortmat(cloned_repo_path)
+            f = open(f_path, "w")  
+            f.write(d_content)
+            f.close()
+            return f_path
 
-        return self.first_language
+        except Exception as ex:
+            l.error('Failed to write Dockerfile to {}: {}'.format(f_path, ex))
+            import traceback; traceback.print_exc()
 
-        
-    def run(self):
-
-        self.get_repo_lenguaje()
-
-        self.generate_dockerfile()
-
-        return self.dockerfile_sheet
 
 
     def generate_dockerfile(self):
-
         json_file = open("./deployment_service/gateways/input/dockerfile/languages.json")
-
         lenguajes = json.load(json_file)
+        if self.language in lenguajes.keys():
+            self.language = lenguajes[self.language]
 
-        if self.first_language in lenguajes.keys():
-            self.image = lenguajes[self.first_language]
-        else:
-            self.image= self.first_language
+        dockerfile_sheet =  """
 
-        self.dockerfile_sheet =  """
+            FROM """+self.language+""" #:version
 
-                                FROM """+self.image+""" #:version
+            COPY path dst #copy path from the context into the container location(dst)
 
-                                COPY path dst #copy path from the context into the container location(dst)
+            ADD src dst #same as COPY but untar archives and aaccepts http url
 
-                                ADD src dst #same as COPY but untar archives and aaccepts http url
+            RUN command args #run a commaand inside the container
 
-                                RUN command args #run a commaand inside the container
+            ENV name=value #set an environment variable
 
-                                ENV name=value #set an environment variable
+            WORKDIR path #set the default working directory
+            
+            CMD args #set the default command
 
-                                WORKDIR path #set the default working directory
-                                
-                                CMD args #set the default command
+        """
 
-                            """
-
-        return self.dockerfile_sheet
+        return dockerfile_sheet
 

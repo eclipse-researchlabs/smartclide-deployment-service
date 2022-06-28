@@ -19,16 +19,14 @@ class GitInputGateway(object):
             repo_name = repo_url.split('/')[-1]
             if os.path.exists(f'{self.repo_dir}{repo_name}'):
                 shutil.rmtree(f'{self.repo_dir}{repo_name}')
-            self.__repo = Repo.clone_from(repo_url, f'{self.repo_dir}{repo_name}')        
-            return self.__repo
+            dest_path = f'{self.repo_dir}{repo_name}'
+            self.__repo = Repo.clone_from(repo_url, dest_path)        
+            return dest_path
         except Exception as ex:
             l.error(f'{ex}: Failed to clone repo ')
             import traceback
             traceback.print_exc()
     
-    def update_remote(self, remote :str) -> bool:
-        pass
-
     def commit_changes(self, repo_path):
         try:
             git_repo = Repo(repo_path)
@@ -37,6 +35,7 @@ class GitInputGateway(object):
                 git_config.set_value('user', 'email', 'someone@example.com')
             
             if git_repo.is_dirty(untracked_files=True):
+                git_repo.remotes.origin.pull()
                 git_repo.index.add(['.gitlab-ci.yml'])
                 git_repo.index.commit('Add .gitlab-ci.yml')
                 return True
@@ -74,7 +73,7 @@ class GitInputGateway(object):
                     ]
                 }
             }
-            f_path = f"{repo_path}.gitlab-ci.yml"
+            f_path = f"{repo_path}/.gitlab-ci.yml"
             file = open(f_path, "w")
             yaml.dump(data, file)
             file.close()
@@ -91,6 +90,7 @@ class GitInputGateway(object):
             # origin = git_repo.remote(name='origin')
             # origin.push()
             # # git_repo.git.branch('master')
+            git_repo.remotes.origin.pull()
             git_repo.remotes.origin.push()
             return True
 
