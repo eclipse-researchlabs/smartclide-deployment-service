@@ -9,7 +9,7 @@ services:
     environment:
       - GITLAB_URL=https://gitlab.dev.smartclide.eu/
       - MOM_HOST=rabbitmq
-      - MOM_PORT=${MOM_PORT}
+      - MOM_PORT=3332
     links:
       - rabbitmq:rabbitmq
       - mongo:mongo
