@@ -14,17 +14,18 @@ class Settings():
         
         self.api = {
             'host': '0.0.0.0', 
-            'port': 6666
+            'port': 3000
         } 
 
         self.gitlab = {
             'url': os.environ.get('GITLAB_URL',config('GITLAB_URL')),
-            'docker_url': 'tcp://docker:2375'
         }
 
         self.mom = {
             'mom_host': os.environ.get('MOM_HOST',config('MOM_HOST')),
-            'mom_port': os.environ.get('MOM_PORT',config('MOM_PORT'))
+            'mom_port': os.environ.get('MOM_PORT',config('MOM_PORT')),
+            'mom_user': os.environ.get('MOM_USER',config('MOM_USER')),
+            'mom_password': os.environ.get('MOM_PASSWORD',config('MOM_PASSWORD')),
         }
 
         self.repo_dir = '/tmp/repos/'

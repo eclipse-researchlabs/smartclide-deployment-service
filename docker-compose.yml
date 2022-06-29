@@ -10,6 +10,8 @@ services:
       - GITLAB_URL=https://gitlab.dev.smartclide.eu/
       - MOM_HOST=rabbitmq
       - MOM_PORT=3332
+      - MOM_USER=''
+      - MOM_PASSWORD=''
     links:
       - rabbitmq:rabbitmq
       - mongo:mongo
