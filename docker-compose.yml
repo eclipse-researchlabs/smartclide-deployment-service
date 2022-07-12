@@ -2,8 +2,8 @@ version: '3'
 services:
   deployment-service:
     image: ghcr.io/eclipse-researchlabs/smartclide-deployment-service:develop
-    container_name: deployment_component-service
-    hostname: deployment_component
+    container_name: deployment-service
+    hostname: deployment-service
     ports:
       - 3000:3000   
     environment:

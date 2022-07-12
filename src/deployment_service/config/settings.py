@@ -22,10 +22,10 @@ class Settings():
         }
 
         self.mom = {
-            'mom_host': os.environ.get('MOM_HOST',config('MOM_HOST')),
-            'mom_port': os.environ.get('MOM_PORT',config('MOM_PORT')),
-            'mom_user': os.environ.get('MOM_USER',config('MOM_USER')),
-            'mom_password': os.environ.get('MOM_PASSWORD',config('MOM_PASSWORD')),
+            'host': os.environ.get('MOM_HOST',config('MOM_HOST')),
+            'port': os.environ.get('MOM_PORT',config('MOM_PORT')),
+            'user': os.environ.get('MOM_USER',config('MOM_USER')),
+            'password': os.environ.get('MOM_PASSWORD',config('MOM_PASSWORD')),
         }
 
         self.repo_dir = '/tmp/repos/'

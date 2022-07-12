@@ -44,10 +44,10 @@ def create_or_update_deployment(k8s_url, k8s_token, name, username, container_po
             }
         )
 
-        if deployment:
-            mom_gw = MOMAMQPOutputGateway()
-            ret = mom_gw.send_deployment_is_running(name, id)
-            if ret: return deployment.to_dict()
+        if deployment: return deployment.to_dict()
+            # mom_gw = MOMAMQPOutputGateway()
+            # ret = mom_gw.send_deployment_is_running(name, id)
+            # if ret: return deployment.to_dict()
 
 def clone_repository(url):
     g_gw = GitInputGateway()

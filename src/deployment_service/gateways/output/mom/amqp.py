@@ -7,8 +7,8 @@ class MOMAMQPOutputGateway(MOMOutput):
 
     def __init__(self):
         settings = Settings()
-        self.__host = settings.mom['mom_host']
-        self.__port = int(settings.mom['mom_port'])
+        self.__host = settings.mom['host']
+        self.__port = int(settings.mom['port'])
         self.__user = settings.mom['user']
         self.__password = settings.mom['password']
         self.__amqp_client = self._get_amqp_client()
