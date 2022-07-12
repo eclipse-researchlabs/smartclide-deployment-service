@@ -8,7 +8,6 @@ from deployment_service.gateways.output.deploy.kubernetes import KubernetesDeplo
 from deployment_service.repositories.mongo.deployment import MongoDeploymentRepository
 from deployment_service.use_cases.deployments import create_or_update_deployment, get_deployments_list, prepare_deployment
 from deployment_service.models.deployment import Deployment
-from deployment_service.repositories.postgres.postgre_repo import PostgresRepo
 from deployment_service.config.settings import Settings
 
 settings = Settings()
