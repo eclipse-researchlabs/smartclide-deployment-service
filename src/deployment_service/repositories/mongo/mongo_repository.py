@@ -1,7 +1,7 @@
 import pymongo
 
 class MongoRepo:
-    host: str = 'localhost'
+    host: str = 'mongo'
     port: int = 27017
 
     def __init__(self, host='localhost', port=27017, db_name='deployment_component', page_size=50 )-> None:

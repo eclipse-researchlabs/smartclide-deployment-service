@@ -62,9 +62,9 @@ async def run_deployment(
     replicas: Optional[int] = 1):
     
     try:
-        ret = prepare_deployment(repository_url)
-        if ret:
-            result = create_or_update_deployment(k8s_url, k8s_token, repository_name, username, container_port, replicas)
+        gitlab_ci_path = prepare_deployment(repository_url, username, repository_name)
+        if gitlab_ci_path:
+            result = create_or_update_deployment(k8s_url, k8s_token, repository_name, username, container_port, replicas, gitlab_ci_path)
         else: 
             return JSONResponse(content ={'message': 'Can not deploy'}, status_code = 404 ) 
         if result:

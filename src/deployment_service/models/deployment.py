@@ -14,7 +14,7 @@ class Deployment():
     id: str
     user: str
     project: str
-    domain: str
+    service_url: str
     port: int
     # provider: Provider
     # services: List[Service]

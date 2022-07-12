@@ -13,16 +13,18 @@ settings = Settings()
 def get_deployments_list(gateway):
     return gateway.list_deployments()
 
-def create_or_update_deployment(k8s_url, k8s_token, name, username, container_port, replicas):   
-    k_gw = KubernetesDeploymentOutputGateway(k8s_url, k8s_token) 
+def create_or_update_deployment(k8s_url, k8s_token, name, username, container_port, replicas, gitlab_ci_path):  
+    k_gw = KubernetesDeploymentOutputGateway(k8s_url, k8s_token, gitlab_ci_path) 
     deployment_result = k_gw.run(
             name=name, 
             image=f'{username}/{name}', 
             replicas=int(replicas),
             port=container_port
         )
-    if hasattr(deployment_result, 'body'):
-        return deployment_result
+
+
+    # if hasattr(deployment_result, 'body'):
+    #     return deployment_result
 
     if deployment_result:
         repo = MongoDeploymentRepository()
@@ -33,7 +35,7 @@ def create_or_update_deployment(k8s_url, k8s_token, name, username, container_po
                 'user': username,
                 'project': name,
                 'port': container_port,
-                'hostname': '',
+                'service_url': 'https://{}:{}'.format(deployment_result, container_port),
                 'replicas': replicas,
                 'status': 'active',
                 'k8s_url': k8s_url,
@@ -41,6 +43,7 @@ def create_or_update_deployment(k8s_url, k8s_token, name, username, container_po
                 'stopped_at': ''
             }
         )
+
         if deployment:
             mom_gw = MOMAMQPOutputGateway()
             ret = mom_gw.send_deployment_is_running(name, id)
@@ -70,15 +73,15 @@ def prepare_deployment(repository_url, user, repository_name):
     repository_path = clone_repository(repository_url)
 
     if not check_dockerfile_exists(repository_path): 
-        generate_dockerfile(repository_path)
+        generate_dockerfile(repository_url, repository_path)
         return False
 
     if not check_gitlab_ci_file_exists(repository_path): 
         generate_gitlab_ci_file(repository_path)
 
     g_gw = GitInputGateway()
-    g_gw.commit_changes(repository_name)
+    g_gw.commit_changes(repository_path)
     result = g_gw.push_repository(repository_path)
-
-    return result
-
+    if result:
+        gl_ci_path = '{}/.gitlab-ci.yml'.format(repository_path)
+        return gl_ci_path

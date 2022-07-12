@@ -10,7 +10,7 @@ class MongoDeploymentRepository(MongoRepo):
             id=str(deployment['id']),
             user=deployment['user'],
             project=deployment['project'],
-            domain=deployment['domain'],
+            service_url=deployment['service_url'],
             port=deployment['port'],
             # provider: Provider
             # services: List[Service]

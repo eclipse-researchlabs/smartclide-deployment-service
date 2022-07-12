@@ -1,0 +1,2 @@
+class RepositoryInterface(object):
+    pass
