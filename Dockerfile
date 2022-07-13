@@ -5,11 +5,13 @@ RUN apt-get update && \
 
 COPY ./src /deployment-service
 WORKDIR "/deployment-service/"
+
+RUN python3 -m pip install -r requirements.txt
+
 RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.31.0/geckodriver-v0.31.0-linux64.tar.gz 
 RUN tar -xvf geckodriver-v0.31.0-linux64.tar.gz && rm geckodriver-v0.31.0-linux64.tar.gz
 
-ENV PATH=/deployment-service/
-RUN pip install -r requirements.txt
+ENV PATH=$PATH:/deployment-service/
 
 CMD exec /bin/bash -c "python3 deployment-service_api.py"
 # CMD sleep infinity
