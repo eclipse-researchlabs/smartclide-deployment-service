@@ -1,18 +1,29 @@
-import pymongo
+import urllib.parse
+from pymongo import MongoClient
+from deployment_service.config.settings import Settings
 
 class MongoRepo:
-    host: str = 'localhost'
-    port: int = 27017
-
-    def __init__(self, host='localhost', port=27017, db_name='deployment_component', page_size=50 )-> None:
+    def __init__(self, db_name='deployment_component', page_size=50 )-> None:
+        settings = Settings()
+        self.host = settings.repositories['mongo']['host']
+        self.port = int(settings.repositories['mongo']['port'])
+        self.user = urllib.parse.quote_plus(settings.repositories['mongo']['user'])
+        self.password = urllib.parse.quote_plus(settings.repositories['mongo']['password'])
         db = self.__get_mongo_client(db_name)
         self.deployments_db = db.deployments
-        # import pdb;pdb.set_trace()
 
     def __get_mongo_client(self, db_name):
-        client = pymongo.MongoClient(
-            self.host,
-            port=self.port, 
-        )
+        if self.user and self.password:
+            client = MongoClient('mongodb://{}:{}@{}:{}'.format(
+                self.user,
+                self.password, 
+                self.host, 
+                self.port
+            ))
+        else:
+            client = MongoClient(
+                self.host,
+                port=self.port, 
+            )
         db = client[db_name]
         return db

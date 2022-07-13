@@ -13,16 +13,18 @@ settings = Settings()
 def get_deployments_list(gateway):
     return gateway.list_deployments()
 
-def create_or_update_deployment(k8s_url, k8s_token, name, username, container_port, replicas):   
-    k_gw = KubernetesDeploymentOutputGateway(k8s_url, k8s_token) 
+def create_or_update_deployment(k8s_url, k8s_token, name, username, container_port, replicas, gitlab_ci_path):  
+    k_gw = KubernetesDeploymentOutputGateway(k8s_url, k8s_token, gitlab_ci_path) 
     deployment_result = k_gw.run(
             name=name, 
             image=f'{username}/{name}', 
             replicas=int(replicas),
             port=container_port
         )
-    if hasattr(deployment_result, 'body'):
-        return deployment_result
+
+
+    # if hasattr(deployment_result, 'body'):
+    #     return deployment_result
 
     if deployment_result:
         repo = MongoDeploymentRepository()
@@ -33,7 +35,7 @@ def create_or_update_deployment(k8s_url, k8s_token, name, username, container_po
                 'user': username,
                 'project': name,
                 'port': container_port,
-                'hostname': '',
+                'service_url': 'http://{}:{}'.format(deployment_result, container_port),
                 'replicas': replicas,
                 'status': 'active',
                 'k8s_url': k8s_url,
@@ -41,21 +43,23 @@ def create_or_update_deployment(k8s_url, k8s_token, name, username, container_po
                 'stopped_at': ''
             }
         )
-        if deployment:
+
+        if deployment: 
+            # return deployment.to_dict()
             mom_gw = MOMAMQPOutputGateway()
             ret = mom_gw.send_deployment_is_running(name, id)
             if ret: return deployment.to_dict()
 
-def clone_repository(url):
+def clone_repository(url, branch):
     g_gw = GitInputGateway()
-    return g_gw.clone_repo(url)
+    return g_gw.clone_repo(url, branch)
 
 def check_dockerfile_exists(repo_path):
     f_path = f'{repo_path}/Dockerfile'
     return exists(f_path)
 
-def generate_dockerfile(url, cloned_repo_path):
-    d_gw = DockerfileSheet(url)
+def generate_dockerfile(url, cloned_repo_path, token):
+    d_gw = DockerfileSheet(url, token)
     return d_gw.run(cloned_repo_path)
 
 def check_gitlab_ci_file_exists(repo_path):
@@ -66,19 +70,25 @@ def generate_gitlab_ci_file(repo_path):
     g_gw = GitInputGateway()
     g_gw.write_cdci_file(repo_path)
 
-def prepare_deployment(repository_url, user, repository_name):
-    repository_path = clone_repository(repository_url)
+def prepare_deployment(repository_url, repository_token, branch):
+    url_parts = repository_url.split('//')
+    auth_url_parts = []
+    auth_url_parts.append('https://oauth2:{}@'.format(repository_token))
+    auth_url_parts.append(url_parts[1])
+    auth_url = ''.join(auth_url_parts)
+
+    repository_path = clone_repository(auth_url, branch)
 
     if not check_dockerfile_exists(repository_path): 
-        generate_dockerfile(repository_path)
+        generate_dockerfile(repository_url, repository_path, repository_token)
         return False
 
     if not check_gitlab_ci_file_exists(repository_path): 
         generate_gitlab_ci_file(repository_path)
 
     g_gw = GitInputGateway()
-    g_gw.commit_changes(repository_name)
+    g_gw.commit_changes(repository_path)
     result = g_gw.push_repository(repository_path)
-
-    return result
-
+    if result:
+        gl_ci_path = '{}/.gitlab-ci.yml'.format(repository_path)
+        return gl_ci_path

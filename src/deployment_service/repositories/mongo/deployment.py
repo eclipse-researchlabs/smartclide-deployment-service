@@ -10,7 +10,7 @@ class MongoDeploymentRepository(MongoRepo):
             id=str(deployment['id']),
             user=deployment['user'],
             project=deployment['project'],
-            domain=deployment['domain'],
+            service_url=deployment['service_url'],
             port=deployment['port'],
             # provider: Provider
             # services: List[Service]
@@ -42,7 +42,7 @@ class MongoDeploymentRepository(MongoRepo):
     def list_deployments(self, user, project, skip: int = 0, limit: int=20) -> list:
         filter = {'user': user, 'project': project}
         try:
-            count = self.deployments_db.find().count()
+            count = self.deployments_db.find(filter).count()
             deployments = self.deployments_db.find(filter).limit(limit).skip(skip).sort('timestamp',-1)
             return {
                 'data': self.create_deployment_objects(deployments),
@@ -53,7 +53,7 @@ class MongoDeploymentRepository(MongoRepo):
 
     def show_deployment(self, id):
         try:
-            deployments = self.deployments_db.find({"_id": id}).limit(1)
+            deployments = self.deployments_db.find({"id": id}).limit(1)
             if deployments:
                 return self.create_deployment_objects(deployments)[0]
         except:
@@ -61,7 +61,7 @@ class MongoDeploymentRepository(MongoRepo):
 
     def set_deployment_stopped(self, id):
         try:
-            deployments = self.deployments_db.find({"_id": id}).limit(1)
+            deployments = self.deployments_db.find({"id": id}).limit(1)
             if deployments:
                 deployment = self.create_deployment_objects(deployments)[0]
                 deployment['status'] = 'stopped'

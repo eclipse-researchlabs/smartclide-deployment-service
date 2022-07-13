@@ -1,14 +1,12 @@
-from cmath import pi
+from selenium.webdriver import FirefoxOptions
 import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-#from deployment_service.config.settings import Settings
 from deployment_service.config.logging import logger as l
 
 class KubernetesPricingAzure(object):
 
     def __init__(self):
-        #self.setting = Settings()
         self.azure_url ="https://azure.microsoft.com/es-es/pricing/details/kubernetes-service/"
         self.total_price = 0
         self.name = "Microsoft Azure"
@@ -42,7 +40,9 @@ class KubernetesPricingAzure(object):
 
     def get_price(self):
         try:
-            driver = webdriver.Firefox()
+            opts = FirefoxOptions()
+            opts.add_argument("--headless")
+            driver = webdriver.Firefox(options=opts)
             driver.get(self.azure_url)
             time.sleep(3)
             price = driver.find_element(By.CLASS_NAME,"price-value")

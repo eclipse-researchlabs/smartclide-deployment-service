@@ -66,7 +66,7 @@ class KubernetesPricingProvider():
 
     def get_kubernetes_provider(self):
         try:
-            if "azure" in self.provider_url or "microsoft" in self.provider_url:
+            if "azure" in self.provider_url or "microsoft" in self.provider_url or 'az' in self.provider_url:
                 self.kubernetes_provider = "Microsoft Azure"
                 return
 

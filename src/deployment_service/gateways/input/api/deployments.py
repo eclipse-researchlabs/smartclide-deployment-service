@@ -8,7 +8,6 @@ from deployment_service.gateways.output.deploy.kubernetes import KubernetesDeplo
 from deployment_service.repositories.mongo.deployment import MongoDeploymentRepository
 from deployment_service.use_cases.deployments import create_or_update_deployment, get_deployments_list, prepare_deployment
 from deployment_service.models.deployment import Deployment
-from deployment_service.repositories.postgres.postgre_repo import PostgresRepo
 from deployment_service.config.settings import Settings
 
 settings = Settings()
@@ -36,13 +35,13 @@ async def read_deployment(id: str, k8s_token: str = Header(None)):
     try:    
         deployment = mongo_repo.show_deployment(id)
         if deployment:
-            kubernetes_gw = KubernetesDeploymentOutputGateway(deployment['k8s_url'], k8s_token)
+            kubernetes_gw = KubernetesDeploymentOutputGateway(deployment['k8s_url'], k8s_token, '')
             status = kubernetes_gw.deployment_status(deployment['project'])
 
-            if not status:
-                return JSONResponse(content={'message': 'Deployment not running'}, status_code=404)
-            else:
-                return JSONResponse(content=deployment, status_code=200)
+            # if not status:
+            #     return JSONResponse(content={'message': 'Deployment not running'}, status_code=404)
+            # else:
+            return JSONResponse(content=deployment, status_code=200)
         
     except Exception as ex:
         import traceback; traceback.print_exc()
@@ -63,9 +62,9 @@ async def run_deployment(
     replicas: Optional[int] = 1):
     
     try:
-        ret = prepare_deployment(repository_url)
-        if ret:
-            result = create_or_update_deployment(k8s_url, k8s_token, repository_name, username, container_port, replicas)
+        gitlab_ci_path = prepare_deployment(repository_url, gitlab_token, branch)
+        if gitlab_ci_path:
+            result = create_or_update_deployment(k8s_url, k8s_token, repository_name, username, container_port, replicas, gitlab_ci_path)
         else: 
             return JSONResponse(content ={'message': 'Can not deploy'}, status_code = 404 ) 
         if result:
@@ -86,11 +85,11 @@ async def delete_deployment(id: str, k8s_token: str = Header(None)):
 
     try:
         deployment = mongo_repo.show_deployment(id)
-        kubernetes_gw = KubernetesDeploymentOutputGateway(deployment['k8s_url'], k8s_token)
+        kubernetes_gw = KubernetesDeploymentOutputGateway(deployment['k8s_url'], k8s_token, '')
         stopped_deployment = mongo_repo.set_deployment_stopped(id)
         result = kubernetes_gw.stop(deployment['project'])
         if result:
-            return JSONResponse(content=stopped_deployment, status_code=200)
+            return JSONResponse(content=stopped_deployment.to_dict(), status_code=200)
         else:
             return JSONResponse(content={'message': 'Deployment not running'}, status_code=404)    
     except (NotFoundError, ApiException):

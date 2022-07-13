@@ -1,5 +1,6 @@
 from datetime import datetime
 import yaml
+import time
 from kubernetes import client, dynamic
 from kubernetes.client.exceptions import ApiException
 from deployment_service.config.logging import logger as l
@@ -27,8 +28,8 @@ class KubernetesDeploymentOutputGateway(object):
             self.create_namespace(name.replace('_', '-'))
             self.create_docker_registry_secret(name.replace('_', '-'))
             deployment = self.create_deployment(name, image, port, replicas)
-            self.create_service(name.replace('_', '-'), port)
-            return deployment
+            lb_ip = self.create_service(name.replace('_', '-'), port)
+            return lb_ip
 
         except Exception as d_ex:
             import traceback; traceback.print_exc()
@@ -37,6 +38,7 @@ class KubernetesDeploymentOutputGateway(object):
         
 
     def stop(self, name):
+        name = name.replace('_', '-')
         try:
             self.delete_deployment(name)
             self.delete_service(name)
@@ -127,8 +129,17 @@ class KubernetesDeploymentOutputGateway(object):
                 type='LoadBalancer'
             )
         )
-        core_v1_api.create_namespaced_service(namespace=name.replace('_', '-'), body=body)
-        return True
+        result = core_v1_api.create_namespaced_service(namespace=name.replace('_', '-'), body=body)
+
+        time.sleep(5)
+
+        while True and result:
+            service = core_v1_api.read_namespaced_service(name=name, namespace=name.replace('_', '-'))
+            if service.status.load_balancer.ingress:
+                load_balancer_ip = service.status.load_balancer.ingress[0].ip if len(service.status.load_balancer.ingress) > 0 else None
+                if load_balancer_ip: return load_balancer_ip
+            else: time.sleep(5)
+
 
     def create_namespace(self, name):
         try:
@@ -208,8 +219,8 @@ class KubernetesDeploymentOutputGateway(object):
 
     def get_deployment_metrics(self, name, url):
         try:
-            # config.load_kube_config()
-            api = client.CustomObjectsApi()
+            api_client = client.ApiClient(self.aConfiguration)
+            api = client.CustomObjectsApi(api_client)
             k8s_nodes = api.list_cluster_custom_object("metrics.k8s.io", "v1beta1", "pods")
             for stats in k8s_nodes['items']:
                 if name in stats['metadata']['namespace']:

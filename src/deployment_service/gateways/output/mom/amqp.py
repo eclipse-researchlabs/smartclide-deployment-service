@@ -7,12 +7,19 @@ class MOMAMQPOutputGateway(MOMOutput):
 
     def __init__(self):
         settings = Settings()
-        self.__host = settings.mom['mom_host']
-        self.__port = int(settings.mom['mom_port'])
+        self.__host = settings.mom['host']
+        self.__port = int(settings.mom['port'])
+        self.__user = settings.mom['user']
+        self.__password = settings.mom['password']
         self.__amqp_client = self._get_amqp_client()
 
     def _get_amqp_client(self):
-        connection = pika.BlockingConnection(pika.ConnectionParameters(self.__host))
+        connection = None
+        if self.__user:
+            credentials = pika.PlainCredentials(self.__user, self.__password)
+            connection = pika.BlockingConnection(pika.ConnectionParameters(self.__host), credentials=credentials)
+        else: 
+            connection = pika.BlockingConnection(pika.ConnectionParameters(self.__host))
         channel = connection.channel()
         channel.queue_declare(queue='deployment_service')
         return connection
