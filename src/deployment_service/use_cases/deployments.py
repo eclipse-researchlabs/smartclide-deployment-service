@@ -35,7 +35,7 @@ def create_or_update_deployment(k8s_url, k8s_token, name, username, container_po
                 'user': username,
                 'project': name,
                 'port': container_port,
-                'service_url': 'https://{}:{}'.format(deployment_result, container_port),
+                'service_url': 'http://{}:{}'.format(deployment_result, container_port),
                 'replicas': replicas,
                 'status': 'active',
                 'k8s_url': k8s_url,
@@ -44,21 +44,22 @@ def create_or_update_deployment(k8s_url, k8s_token, name, username, container_po
             }
         )
 
-        if deployment: return deployment.to_dict()
-            # mom_gw = MOMAMQPOutputGateway()
-            # ret = mom_gw.send_deployment_is_running(name, id)
-            # if ret: return deployment.to_dict()
+        if deployment: 
+            # return deployment.to_dict()
+            mom_gw = MOMAMQPOutputGateway()
+            ret = mom_gw.send_deployment_is_running(name, id)
+            if ret: return deployment.to_dict()
 
-def clone_repository(url):
+def clone_repository(url, branch):
     g_gw = GitInputGateway()
-    return g_gw.clone_repo(url)
+    return g_gw.clone_repo(url, branch)
 
 def check_dockerfile_exists(repo_path):
     f_path = f'{repo_path}/Dockerfile'
     return exists(f_path)
 
-def generate_dockerfile(url, cloned_repo_path):
-    d_gw = DockerfileSheet(url)
+def generate_dockerfile(url, cloned_repo_path, token):
+    d_gw = DockerfileSheet(url, token)
     return d_gw.run(cloned_repo_path)
 
 def check_gitlab_ci_file_exists(repo_path):
@@ -69,11 +70,17 @@ def generate_gitlab_ci_file(repo_path):
     g_gw = GitInputGateway()
     g_gw.write_cdci_file(repo_path)
 
-def prepare_deployment(repository_url, user, repository_name):
-    repository_path = clone_repository(repository_url)
+def prepare_deployment(repository_url, repository_token, branch):
+    url_parts = repository_url.split('//')
+    auth_url_parts = []
+    auth_url_parts.append('https://oauth2:{}@'.format(repository_token))
+    auth_url_parts.append(url_parts[1])
+    auth_url = ''.join(auth_url_parts)
+
+    repository_path = clone_repository(auth_url, branch)
 
     if not check_dockerfile_exists(repository_path): 
-        generate_dockerfile(repository_url, repository_path)
+        generate_dockerfile(repository_url, repository_path, repository_token)
         return False
 
     if not check_gitlab_ci_file_exists(repository_path): 

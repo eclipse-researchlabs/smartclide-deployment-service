@@ -10,3 +10,4 @@ WORKDIR "/deployment-service/"
 RUN pip install -r requirements.txt
 
 CMD exec /bin/bash -c "python3 deployment-service_api.py"
+# CMD sleep infinity

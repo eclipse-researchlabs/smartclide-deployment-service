@@ -1,19 +1,23 @@
 import json
+import urllib.parse
 import requests
 from deployment_service.config.logging import logger as l
-
+from deployment_service.config.settings import Settings
 class DockerfileSheet():
 
-    def __init__(self,repo_url):
+    def __init__(self,repo_url, token):
+        self.settings = Settings()
         self.repo_url = repo_url
+        self.token = token
         self.language = self.get_repo_lenguaje()
         self.image = ""
         
         
     def get_repo_lenguaje(self):
-        repo_name = self.repo_url.split(".com")[1]+"/languages"
-        url = 'https://api.github.com/repos/{}'.format(repo_name)
-        response = requests.get(url)
+        if self.repo_url[-1] == '/': self.repo_url = self.repo_url[0:-1]
+        repo_name = urllib.parse.quote(self.repo_url.split("/")[-1])
+        url = '{}api/v4/projects/{}/languages'.format(self.settings.gitlab['url'], repo_name)
+        response = requests.get(url, headers={'PRIVATE-TOKEN': self.token})
         lenguajes = json.loads(response.text)
         language = list(lenguajes.keys())[0]
         return language
@@ -22,14 +26,14 @@ class DockerfileSheet():
         try:
             self.get_repo_lenguaje()
             d_content = self.generate_dockerfile()
-            f_path = '{}/Dockerfile'.fortmat(cloned_repo_path)
+            f_path = '{}/Dockerfile'.format(cloned_repo_path)
             f = open(f_path, "w")  
             f.write(d_content)
             f.close()
             return f_path
 
         except Exception as ex:
-            l.error('Failed to write Dockerfile to {}: {}'.format(f_path, ex))
+            l.error('Failed to write Dockerfile: {}'.format(ex))
             import traceback; traceback.print_exc()
 
 

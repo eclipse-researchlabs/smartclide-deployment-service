@@ -6,9 +6,10 @@ class Settings():
     def __init__(self):
         self.repositories = {
             'mongo': {
-                'host': 'mongo', 
-                'port': 27017, 
-                'password': ''
+                'host': os.environ.get('MONGO_HOST',config('MONGO_HOST')),
+                'port': os.environ.get('MONGO_PORT',config('MONGO_PORT')),
+                'user': os.environ.get('MONGO_USER',config('MONGO_USER')),
+                'password': os.environ.get('MONGO_PASSWORD',config('MONGO_PASSWORD'))
             }
         }
         

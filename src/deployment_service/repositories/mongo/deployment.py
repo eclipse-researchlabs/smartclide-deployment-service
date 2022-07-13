@@ -53,7 +53,7 @@ class MongoDeploymentRepository(MongoRepo):
 
     def show_deployment(self, id):
         try:
-            deployments = self.deployments_db.find({"_id": id}).limit(1)
+            deployments = self.deployments_db.find({"id": id}).limit(1)
             if deployments:
                 return self.create_deployment_objects(deployments)[0]
         except:
@@ -61,7 +61,7 @@ class MongoDeploymentRepository(MongoRepo):
 
     def set_deployment_stopped(self, id):
         try:
-            deployments = self.deployments_db.find({"_id": id}).limit(1)
+            deployments = self.deployments_db.find({"id": id}).limit(1)
             if deployments:
                 deployment = self.create_deployment_objects(deployments)[0]
                 deployment['status'] = 'stopped'

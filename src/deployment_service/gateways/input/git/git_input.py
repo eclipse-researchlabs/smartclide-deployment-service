@@ -14,7 +14,7 @@ class GitInputGateway(object):
         self.repo_dir = settings.repo_dir
         self.__repo = None
 
-    def clone_repo(self, repo_url :str) -> Repo:
+    def clone_repo(self, repo_url :str, branch: str) -> str:
         try: 
             repo_name = repo_url.split('/')[-1]
             if os.path.exists(f'{self.repo_dir}{repo_name}'):

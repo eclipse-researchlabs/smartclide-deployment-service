@@ -38,6 +38,7 @@ class KubernetesDeploymentOutputGateway(object):
         
 
     def stop(self, name):
+        name = name.replace('_', '-')
         try:
             self.delete_deployment(name)
             self.delete_service(name)

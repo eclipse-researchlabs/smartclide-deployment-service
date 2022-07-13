@@ -108,3 +108,5 @@ ENV/
 
 *.pyc
 *.bak
+
+kube_config
