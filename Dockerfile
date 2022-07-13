@@ -1,7 +1,9 @@
 FROM ubuntu:20.04
 
-RUN apt-get update && \
-    apt-get install -y python3-pip git wget
+RUN apt-get update && apt-get -y install software-properties-common
+RUN add-apt-repository ppa:mozillateam/firefox-next
+
+RUN apt-get install -y --no-install-recommends python3-pip git wget firefox 
 
 COPY ./src /deployment-service
 WORKDIR "/deployment-service/"
