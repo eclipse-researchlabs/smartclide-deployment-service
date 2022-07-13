@@ -38,10 +38,10 @@ async def read_deployment(id: str, k8s_token: str = Header(None)):
             kubernetes_gw = KubernetesDeploymentOutputGateway(deployment['k8s_url'], k8s_token, '')
             status = kubernetes_gw.deployment_status(deployment['project'])
 
-            if not status:
-                return JSONResponse(content={'message': 'Deployment not running'}, status_code=404)
-            else:
-                return JSONResponse(content=deployment, status_code=200)
+            # if not status:
+            #     return JSONResponse(content={'message': 'Deployment not running'}, status_code=404)
+            # else:
+            return JSONResponse(content=deployment, status_code=200)
         
     except Exception as ex:
         import traceback; traceback.print_exc()

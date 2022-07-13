@@ -1,8 +1,7 @@
 version: '3'
 services:
   deployment-service:
-    build: .
-    # image: ghcr.io/eclipse-researchlabs/smartclide-deployment-se rvice:develop
+    image: ghcr.io/eclipse-researchlabs/smartclide-deployment-service:develop
     container_name: deployment-service
     hostname: deployment-service
     ports:

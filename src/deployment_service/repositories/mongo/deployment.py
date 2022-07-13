@@ -42,7 +42,7 @@ class MongoDeploymentRepository(MongoRepo):
     def list_deployments(self, user, project, skip: int = 0, limit: int=20) -> list:
         filter = {'user': user, 'project': project}
         try:
-            count = self.deployments_db.find().count()
+            count = self.deployments_db.find(filter).count()
             deployments = self.deployments_db.find(filter).limit(limit).skip(skip).sort('timestamp',-1)
             return {
                 'data': self.create_deployment_objects(deployments),
