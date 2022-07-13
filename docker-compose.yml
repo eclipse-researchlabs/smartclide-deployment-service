@@ -24,7 +24,7 @@ services:
     image: "rabbitmq:latest"
 
   mongo:
-    image: mongo:latest
+    image: "mongo:4.4.14"
     volumes:
       - ./data:/data/db
 
