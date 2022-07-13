@@ -11,6 +11,7 @@ from deployment_service.gateways.input.api.deployments import router as deployme
 settings = Settings()
 api = FastAPI(title="SmartCLIDE deployment component API")
 api.include_router(deployments_router)
+api.include_router(metrics_router)
 
 origins = ['*']
 
