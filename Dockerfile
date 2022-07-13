@@ -5,8 +5,8 @@ RUN apt-get update && \
 
 COPY ./src /deployment-service
 WORKDIR "/deployment-service/"
-RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.31.0/geckodriver-v0.31.0-linux32.tar.gz 
-RUN tar -xvf geckodriver-v0.24.0-linux64.tar.gz && rm geckodriver-v0.24.0-linux64.tar.gz
+RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.31.0/geckodriver-v0.31.0-linux64.tar.gz 
+RUN tar -xvf geckodriver-v0.31.0-linux64.tar.gz && rm geckodriver-v0.64.0-linux32.tar.gz
 
 ENV PATH=/deployment-service/
 RUN pip install -r requirements.txt
