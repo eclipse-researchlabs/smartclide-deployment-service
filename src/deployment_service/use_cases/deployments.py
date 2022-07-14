@@ -25,7 +25,9 @@ def create_or_update_deployment(k8s_url, k8s_token, name, username, container_po
 
     # if hasattr(deployment_result, 'body'):
     #     return deployment_result
-
+    if 'HTTP response bod' in deployment_result:
+        return deployment_result
+        
     if deployment_result:
         repo = MongoDeploymentRepository()
         id = str(uuid.uuid4())
