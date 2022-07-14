@@ -54,7 +54,9 @@ class MongoDeploymentRepository(MongoRepo):
     def show_deployment(self, id):
         try:
             deployments = self.deployments_db.find({"id": id}).limit(1)
-            if deployments:
+            if deployments.count() == 0:
+                return []
+            else:
                 return self.create_deployment_objects(deployments)[0]
         except:
             import traceback; traceback.print_exc()
