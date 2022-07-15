@@ -3,27 +3,32 @@ from pymongo import MongoClient
 from deployment_service.config.settings import Settings
 
 class MongoRepo:
-    def __init__(self, db_name='deployment_component', page_size=50 )-> None:
+    def __init__(self, collection_name='deployment_component', page_size=50)-> None:
         settings = Settings()
         self.host = settings.repositories['mongo']['host']
         self.port = int(settings.repositories['mongo']['port'])
         self.user = urllib.parse.quote_plus(settings.repositories['mongo']['user'])
         self.password = urllib.parse.quote_plus(settings.repositories['mongo']['password'])
-        db = self.__get_mongo_client(db_name)
-        self.deployments_db = db.deployments
+        self.database = settings.repositories['mongo']['database']
+        db = self.__get_mongo_db()
+        # select the collection for storing deployments
+        self.deployments_col = db[collection_name]
 
-    def __get_mongo_client(self, db_name):
+    def __get_mongo_db(self):
         if self.user and self.password:
-            client = MongoClient('mongodb://{}:{}@{}:{}'.format(
+            client = MongoClient('mongodb://{}:{}@{}:{}/{}'.format(
                 self.user,
-                self.password, 
-                self.host, 
-                self.port
+                self.password,
+                self.host,
+                self.port,
+                self.database
             ))
+            # use the database, which this user is allowed to access
+            return client[self.database]
         else:
             client = MongoClient(
                 self.host,
-                port=self.port, 
+                port=self.port
             )
-        db = client[db_name]
-        return db
+            # use the default test database
+            return client.test
