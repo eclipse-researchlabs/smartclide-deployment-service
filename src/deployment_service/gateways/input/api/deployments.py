@@ -35,6 +35,7 @@ async def read_deployment(id: str, k8s_token: str = Header(None)):
     try:    
         deployment = mongo_repo.show_deployment(id)
         if deployment:
+            # import pdb; pdb.set_trace()
             kubernetes_gw = KubernetesDeploymentOutputGateway(deployment['k8s_url'], k8s_token, '')
             status = kubernetes_gw.deployment_status(deployment['project'])
 
@@ -42,7 +43,7 @@ async def read_deployment(id: str, k8s_token: str = Header(None)):
             #     return JSONResponse(content={'message': 'Deployment not running'}, status_code=404)
             # else:
             return JSONResponse(content=deployment, status_code=200)
-        
+        else: return JSONResponse(content={'message': 'deployment not found'}, status_code=404)
     except Exception as ex:
         import traceback; traceback.print_exc()
         return JSONResponse(content={'message': f'Internal server error: {ex}'}, status_code=500)
@@ -68,7 +69,7 @@ async def run_deployment(
         else: 
             return JSONResponse(content ={'message': 'Can not deploy'}, status_code = 404 ) 
         if result:
-            if hasattr(result, 'body'):
+            if isinstance(result, ApiException):
                 return JSONResponse(content={'message': json.loads(result.body)['message']}, status_code=result.status)
             else:
                 return JSONResponse(content = result,status_code = 200 )

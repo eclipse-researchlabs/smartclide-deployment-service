@@ -1,5 +1,6 @@
 from os.path import exists
 import uuid
+from kubernetes.dynamic.exceptions import NotFoundError, ApiException
 from datetime import datetime
 from deployment_service.gateways.output.mom.amqp import MOMAMQPOutputGateway
 from deployment_service.repositories.mongo.deployment import MongoDeploymentRepository
@@ -25,7 +26,7 @@ def create_or_update_deployment(k8s_url, k8s_token, name, username, container_po
 
     # if hasattr(deployment_result, 'body'):
     #     return deployment_result
-    if 'HTTP response bod' in deployment_result:
+    if isinstance(deployment_result, ApiException):
         return deployment_result
         
     if deployment_result:

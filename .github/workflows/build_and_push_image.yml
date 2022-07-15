@@ -37,10 +37,11 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+      - name: Publish Docker Image
+        run: |
+          # login to GitHub Container Registry
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${GITHUB_ACTOR} --password-stdin
+          # build image
+          docker build . --tag ghcr.io/eclipse-researchlabs/smartclide/smartclide-deployment-service:$(date +'%Y-%m-%d')
+          # push image
+          docker push ghcr.io/eclipse-researchlabs/smartclide/smartclide-deployment-service:$(date +'%Y-%m-%d')
