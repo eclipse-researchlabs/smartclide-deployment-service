@@ -14,24 +14,25 @@ class MOMAMQPOutputGateway(MOMOutput):
         self.__amqp_client = self._get_amqp_client()
 
     def _get_amqp_client(self):
-        connection = None
-        if self.__user:
+        parameters = None
+        if self.__user and self.__password:
             credentials = pika.PlainCredentials(self.__user, self.__password)
-            connection = pika.BlockingConnection(pika.ConnectionParameters(self.__host), credentials=credentials)
-        else: 
-            connection = pika.BlockingConnection(pika.ConnectionParameters(self.__host))
+            parameters = pika.ConnectionParameters(host = self.__host, port = self.__port, credentials=credentials)
+        else:
+            parameters = pika.ConnectionParameters(host = self.__host, port = self.__port)
+        connection = pika.BlockingConnection(parameters)
         channel = connection.channel()
         channel.queue_declare(queue='deployment_service')
         return connection
-    
+
     def send_deployment_is_running(self, service_name, service_id):
         try:
-            msg = { 
-                "header": "start deploy", 
-                "service": { 
-                    "id": service_id, 
-                    "name": service_name 
-                } 
+            msg = {
+                "header": "start deploy",
+                "service": {
+                    "id": service_id,
+                    "name": service_name
+                }
             }
             channel = self.__amqp_client.channel()
             channel.basic_publish(
