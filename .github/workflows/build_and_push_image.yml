@@ -42,5 +42,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}:{{ $(date +'%Y-%m-%d') }}
+          tags: ghcr.io/eclipse-researchlabs/smartclide-deployment-service:${{ steps.date.outputs.date }}
           labels: ${{ steps.meta.outputs.labels }}
